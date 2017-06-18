@@ -15,6 +15,7 @@
     "test:unit:node": "istanbul cover node_modules/mocha/bin/_mocha --require test/coverage.js --recursive test/unit",
     "test:unit:karma": "karma start test/unit/environments/karma.conf.js",
     "test:unit:karma:watch": "npm run test:unit:karma -- --no-single-run --no-browsers",
+    "test:server": "node test/server",
     "build": "browserify lib/bluefox.js --standalone Bluefox --outfile standalone.js",
     "prepare": "npm run build"
   },
@@ -40,6 +41,7 @@
     "chai": "^4.0.2",
     "eslint": "^3.19.0",
     "eslint-plugin-import": "^2.2.0",
+    "express": "^4.15.2",
     "glob": "^7.1.2",
     "istanbul": "1.1.0-alpha.1",
     "jsdom": "^10.1.0",
@@ -49,9 +51,13 @@
     "karma-cli": "^1.0.1",
     "karma-firefox-launcher": "^1.0.1",
     "karma-mocha": "^1.3.0",
+    "mime": "^1.3.4",
     "mocha": "^3.2.0",
     "mocha-sugar-free": "^1.3.1",
+    "morgan": "^1.8.1",
+    "serve-index": "^1.8.0",
     "sinon": "^2.1.0",
+    "throttle": "^1.0.3",
     "watchify": "^3.9.0"
   }
 }
