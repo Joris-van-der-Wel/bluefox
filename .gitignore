@@ -3,6 +3,6 @@
 /.idea
 /coverage
 /PRIV
-/standalone.js
+/standalone*.js
 /package-lock.json
 /npm-debug.log

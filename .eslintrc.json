@@ -92,7 +92,7 @@
             "error", {
                 "devDependencies": [
                     "test/**",
-                    "webpack.config.js"
+                    "build.js"
                 ]
             }
         ],
