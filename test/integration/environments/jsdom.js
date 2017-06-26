@@ -3,7 +3,7 @@
 const {JSDOM} = require('jsdom');
 const Promise = require('bluebird');
 
-const Bluefox = require('../../../');
+const Bluefox = require('../../../lib/Bluefox.js');
 const createMutationObserverMock = require('../../createMutationObserverMock');
 
 let currentWindow;

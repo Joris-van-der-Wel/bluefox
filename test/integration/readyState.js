@@ -6,7 +6,7 @@ const {assert: {strictEqual: eq}, assert} = require('chai');
 
 const {navigate, closeWindow, environment, run, getProgress} = BLUEFOX_TEST_ENV;
 
-describe('Waiting for document.readyState', () => {
+describe('Waiting for document.readyState', {timeout: 10000, slow: 2000}, () => {
     beforeEach(async () => {
         await navigate('static/readyState.html');
         await run(async scope => {
@@ -21,7 +21,7 @@ describe('Waiting for document.readyState', () => {
     });
 
     // 'This test does not function properly in jsdom (spec violations)':
-    it('should wait for documentInteractive', {skip: environment === 'jsdom', slow: 2000, timeout: 4000}, async testContext => {
+    it('should wait for documentInteractive', {skip: environment === 'jsdom'}, async testContext => {
         await run(async ({delay, wait, reportProgress}) => {
             await wait.timeout('5s').documentInteractive();
             reportProgress('after wait');
@@ -38,10 +38,10 @@ describe('Waiting for document.readyState', () => {
         );
 
         // repeating the same wait expression should not fail
-        await run(async ({wait}) => wait.timeout(100).documentInteractive());
+        await run(async ({wait}) => { await wait.timeout(100).documentInteractive(); });
     });
 
-    it('should wait for documentInteractive (jsdom)', {skip: environment !== 'jsdom', slow: 2000, timeout: 4000}, async testContext => {
+    it('should wait for documentInteractive (jsdom)', {skip: environment !== 'jsdom'}, async testContext => {
         await run(async ({delay, wait, reportProgress}) => {
             await wait.timeout('3s').documentInteractive();
             reportProgress('after wait');
@@ -68,11 +68,11 @@ describe('Waiting for document.readyState', () => {
         );
 
         // repeating the same wait expression should not fail
-        await run(async ({wait}) => wait.timeout(100).documentInteractive());
+        await run(async ({wait}) => { await wait.timeout(100).documentInteractive(); });
     });
 
     // 'This test does not function properly in jsdom (spec violations)':
-    it('should wait for documentComplete', {skip: environment === 'jsdom', slow: 2000, timeout: 4000}, async testContext => {
+    it('should wait for documentComplete', {skip: environment === 'jsdom'}, async testContext => {
         await run(async ({delay, wait, reportProgress}) => {
             await wait.timeout('5s').documentComplete();
             reportProgress('after wait');
@@ -92,10 +92,10 @@ describe('Waiting for document.readyState', () => {
         );
 
         // repeating the same wait expression should not fail
-        await run(async ({wait}) => wait.timeout(100).documentComplete());
+        await run(async ({wait}) => { await wait.timeout(100).documentComplete(); });
     });
 
-    it('should wait for documentComplete (jsdom)', {skip: environment !== 'jsdom', slow: 2000, timeout: 4000}, async testContext => {
+    it('should wait for documentComplete (jsdom)', {skip: environment !== 'jsdom'}, async testContext => {
         await run(async ({delay, wait, reportProgress}) => {
             await wait.timeout('3s').documentComplete();
             reportProgress('after wait');
@@ -119,6 +119,6 @@ describe('Waiting for document.readyState', () => {
         );
 
         // repeating the same wait expression should not fail
-        await run(async ({wait}) => wait.timeout(100).documentComplete());
+        await run(async ({wait}) => { await wait.timeout(100).documentComplete(); });
     });
 });

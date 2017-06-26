@@ -1,6 +1,6 @@
 'use strict';
 
-const Bluefox = require('../..');
+const Bluefox = require('../../lib/Bluefox.js');
 const {sum, mean, standardDeviation} = require('../statistics');
 
 // todo node.js?

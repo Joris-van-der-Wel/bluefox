@@ -9,7 +9,7 @@ const writeFileAsync = Promise.promisify(fs.writeFile);
 
 const generateStandaloneBundle = async () => {
     console.log('*** Generating standalone bundle');
-    const b = browserify('lib/bluefox.js', {standalone: 'Bluefox'});
+    const b = browserify('lib/Bluefox.js', {standalone: 'Bluefox'});
     const buffer = await Promise.fromCallback(cb => b.bundle(cb));
     return buffer;
 };

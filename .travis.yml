@@ -1,0 +1,60 @@
+language: node_js
+node_js:
+    - "node"
+env:
+    global:
+        - DISPLAY=:100
+        - CHROME_BIN=/usr/bin/chromium-browser
+        - FIREFOX_BIN=/usr/bin/firefox
+install:
+    - npm install
+jobs:
+    include:
+        - stage: test
+          env: TEST_SUITE=lint
+          script: npm run lint
+
+        - stage: test
+          env: TEST_SUITE=unit:node
+          script: npm run test:unit:node:coveralls
+
+        - stage: test
+          env: TEST_SUITE=unit:karma
+          sudo: required
+          dist: trusty
+          before_install:
+              - chmod +x .travis/install_browsers.sh && .travis/install_browsers.sh
+          before_script:
+              - chmod +x .travis/start_vfb.sh && .travis/start_vfb.sh
+          script: npm run test:unit:karma
+
+        - stage: test
+          env: TEST_SUITE=integration:jsdom
+          before_script:
+              - npm run test:server &
+          script: npm run test:integration:jsdom
+
+        - stage: test
+          env: TEST_SUITE=integration:karma
+          sudo: required
+          dist: trusty
+          before_install:
+              - chmod +x .travis/install_browsers.sh && .travis/install_browsers.sh
+          before_script:
+              - chmod +x .travis/start_vfb.sh && .travis/start_vfb.sh
+              - npm run test:server &
+          script: npm run test:integration:karma
+
+        - stage: test
+          env: TEST_SUITE=integration:webdriver:chrome WD_URL=http://localhost:9515
+          sudo: required
+          dist: trusty
+          before_install:
+              - chmod +x .travis/install_browsers.sh && .travis/install_browsers.sh
+              - sudo apt-get install -y chromium-chromedriver
+          before_script:
+              - /usr/lib/chromium-browser/chromedriver --version
+              - chmod +x .travis/start_vfb.sh && .travis/start_vfb.sh
+              - npm run test:server &
+              - /usr/lib/chromium-browser/chromedriver --port=9515 &
+          script: npm run test:integration:webdriver
