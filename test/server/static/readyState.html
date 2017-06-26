@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script>
+            window.progressBeforeInit=[];
+            window.reportProgress=window.reportProgress||(key=>progressBeforeInit.push(key));
+            document.addEventListener('DOMContentLoaded', () => window.reportProgress('DOMContentLoaded'));
+            window.addEventListener('load', () => window.reportProgress('load'));
+        </script>
+        <script>reportProgress('HEAD begin')</script>
+        <title>readyState</title>
+        <script src="progress-foo.js?noCache&waitBeforeResponse=100"></script>
+    </head>
+    <body>
+        <div id="overridesBuiltin">
+            <img name="defaultView">
+            <img name="querySelector">
+            <img name="querySelectorAll">
+            <img name="readyState">
+            <img name="addEventListener">
+            <img name="removeEventListener">
+            <img name="evaluate">
+            <img name="nodeType">
+            <img name="parentNode">
+        </div>
+
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean posuere massa ac dui venenatis, a tincidunt odio hendrerit. Mauris nec lectus id neque egestas tempor eu at est.</p>
+        <img src="foo.jpg?noCache&bytesPerSecond=400000" onload="reportProgress('img loaded')">
+        <p>Proin quis sapien egestas, sodales justo vitae, mollis orci. Aliquam id imperdiet enim.</p>
+        <p>
+            <pre>
+progress = [
+  "HEAD begin",
+  "foo script",
+  "BODY end",
+  "DOMContentLoaded",
+  "img loaded",
+  "load"
+]
+            </pre>
+        </p>
+        <script>reportProgress('BODY end')</script>
+    </body>
+</html>

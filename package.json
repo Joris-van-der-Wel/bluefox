@@ -14,11 +14,15 @@
   "scripts": {
     "lint": "eslint lib test",
     "pretest": "npm run lint && npm run build",
-    "test": "npm run test:unit:node",
+    "test": "set -ex\nfinish(){ jobs -p | xargs kill; }\ntrap finish EXIT\nnpm run test:server &\nnpm run test:unit:node\nnpm run test:integration:jsdom",
     "test:unit:node": "istanbul cover node_modules/mocha/bin/_mocha --require test/coverage.js --recursive test/unit",
     "test:unit:karma": "karma start test/unit/environments/karma.conf.js",
     "test:unit:karma:watch": "npm run test:unit:karma -- --no-single-run --no-browsers",
     "test:server": "node test/server",
+    "test:integration:jsdom": "mocha test/integration/environments/jsdom.js",
+    "test:integration:karma": "karma start test/integration/environments/karma.conf.js",
+    "test:integration:karma:watch": "npm run test:integration:karma -- --no-single-run --no-browsers",
+    "test:integration:webdriver": "mocha test/integration/environments/webdriver.js",
     "build": "node build",
     "prepare": "npm run build"
   },
@@ -62,6 +66,7 @@
     "sinon": "^2.1.0",
     "uglify-es": "^3.0.19",
     "throttle": "^1.0.3",
-    "watchify": "^3.9.0"
+    "watchify": "^3.9.0",
+    "wd": "^1.2.0"
   }
 }

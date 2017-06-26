@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>lipsum</title>
+    <script>window.progressBeforeInit=[];window.reportProgress=window.reportProgress||(key=>progressBeforeInit.push(key))</script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                reportProgress('modification');
+                firstLi.remove();
+                window.mutationObserverMocks && mutationObserverMocks.trigger();
+            }, 100);
+        });
+    </script>
+</head>
+<body>
+<p id="firstP">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+<p id="secondP">Curabitur dignissim eros lectus, ac feugiat leo pharetra vitae.</p>
+<p id="thirdP">Vivamus mauris ante, ullamcorper vitae elementum id, finibus et ex.</p>
+<div id="firstDiv">
+    Text before
+    <ul id="firstUl">
+        <li id="firstLi" class="even">First item</li>
+        <li id="secondLi" class="odd">Second item</li>
+    </ul>
+    Text after
+</div>
+</body>
+</html>
