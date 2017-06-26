@@ -35,8 +35,8 @@ class BluefoxInstrumented extends Bluefox {
 
     getStatistics() {
         const executionDurations = [...this.executions]
-            .map(obj => obj.end - obj.begin)
-            .filter(duration => isFinite(duration));
+        .map(obj => obj.end - obj.begin)
+        .filter(duration => isFinite(duration));
         const allCheckDurations = [...this.executions.values()].map(obj => obj.checks); // [ [1,2], [3,4] ]
         const allCheckDurationsFlat = [].concat(...allCheckDurations);
 

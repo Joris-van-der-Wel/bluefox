@@ -50,9 +50,11 @@ describe('Waiting for document.readyState', () => {
         const progress = await getProgress();
 
         const progressFiltered = progress.filter(value =>
-            value !== 'img loaded' && // jsdom only loads images if an optional packages installed, and even in that case it loads images
-                                      // before everything else
-            value !== 'load' // "load" is always fired at the same time as DOMContentLoaded because of these issues ^
+            // jsdom only loads images if an optional packages installed, and even in that case it loads images
+            // before everything else
+            value !== 'img loaded' &&
+            // "load" is always fired at the same time as DOMContentLoaded because of these issues ^
+            value !== 'load'
         );
 
         // console.log(JSON.stringify(progress, null, 2));
@@ -102,8 +104,9 @@ describe('Waiting for document.readyState', () => {
         const progress = await getProgress();
 
         const progressFiltered = progress.filter(value =>
-            value !== 'img loaded' // jsdom only loads images if an optional packages installed, and even in that case it loads images
-                                   // before everything else
+            // jsdom only loads images if an optional packages installed, and even in that case it loads images
+            // before everything else
+            value !== 'img loaded'
         );
         // console.log(JSON.stringify(progress, null, 2));
         eq(progressFiltered[0], 'HEAD begin');
