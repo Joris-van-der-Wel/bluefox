@@ -51,6 +51,7 @@ describe('actions', () => {
             isTrue(new actions.XPathAll('').wantsDefaultAmountCheck);
             isFalse(new actions.DocumentInteractive().wantsDefaultAmountCheck);
             isFalse(new actions.DocumentComplete().wantsDefaultAmountCheck);
+            isFalse(new actions.Delay(123).wantsDefaultAmountCheck);
         });
 
         it('Should set #appliesAmountCheck to true for actions that check the amount', () => {
@@ -64,6 +65,23 @@ describe('actions', () => {
             isFalse(new actions.XPathAll('').appliesAmountCheck);
             isFalse(new actions.DocumentInteractive().appliesAmountCheck);
             isFalse(new actions.DocumentComplete().appliesAmountCheck);
+            isFalse(new actions.Delay(123).appliesAmountCheck);
+        });
+    });
+
+    describe('additionalCheckTimeout', () => {
+        it('Should set #additionalCheckTimeout for delay based actions', () => {
+            deepEqual(new actions.Action().additionalCheckTimeout, []);
+            deepEqual(new actions.Noop().additionalCheckTimeout, []);
+            deepEqual(new actions.Target(null).additionalCheckTimeout, []);
+            deepEqual(new actions.Amount(1, 2).additionalCheckTimeout, []);
+            deepEqual(new actions.Selector('').additionalCheckTimeout, []);
+            deepEqual(new actions.SelectorAll('').additionalCheckTimeout, []);
+            deepEqual(new actions.XPath('').additionalCheckTimeout, []);
+            deepEqual(new actions.XPathAll('').additionalCheckTimeout, []);
+            deepEqual(new actions.DocumentInteractive().additionalCheckTimeout, []);
+            deepEqual(new actions.DocumentComplete().additionalCheckTimeout, []);
+            deepEqual(new actions.Delay(123).additionalCheckTimeout, [123]);
         });
     });
 
@@ -279,7 +297,7 @@ describe('actions', () => {
         });
 
         describe('#describe()', () => {
-            it('Should describe the amount wait with the timeout', () => {
+            it('Should describe the amount to wait with the timeout', () => {
                 eq(new actions.Amount(1).describe(1500), 'waits up to 1.5 seconds until exactly 1 results are found');
                 eq(new actions.Amount(1, Infinity).describe(1000), 'waits up to 1 seconds until a result is found');
                 eq(new actions.Amount(2, Infinity).describe(30000), 'waits up to 30 seconds until 2 or more results are found');
@@ -870,6 +888,57 @@ describe('actions', () => {
                         'waits up to 6.5 seconds until all synchronous resources of the HTML document have been loaded'
                     );
                 });
+            });
+        });
+    });
+
+    describe('Delay', () => {
+        it('Should be frozen', () => {
+            ok(Object.isFrozen(new actions.Delay(123)));
+        });
+
+        it('Should throw for invalid timeout values', () => {
+            throws(() => new actions.Delay('123'), /invalid.*timeout.*argument/i);
+            throws(() => new actions.Delay('foo'), /invalid.*timeout.*argument/i);
+            throws(() => new actions.Delay({}), /invalid.*timeout.*argument/i);
+            throws(() => new actions.Delay(new Date()), /invalid.*timeout.*argument/i);
+            throws(() => new actions.Delay(Symbol()), /invalid.*timeout.*argument/i);
+        });
+
+        describe('#execute()', () => {
+            it('Should be pending if the delay has not yet passed', () => {
+                const action = new actions.Delay('2s');
+                const result = action.execute(document.body, {executionStart: 5000, checkStart: 5000});
+                eq(result.status, RESULT_STATUS_PENDING);
+                ok(result.value === null);
+                deepEqual(result.reasonStrings, ['the delay of ', ' seconds has not yet elapsed, only ', ' seconds have elapsed so far']);
+                deepEqual(result.reasonValues, [2, 0]);
+            });
+
+            it('Should be pending if the delay has not yet passed', () => {
+                const action = new actions.Delay('2s');
+                const result = action.execute(document.body, {executionStart: 5000, checkStart: 6999});
+                eq(result.status, RESULT_STATUS_PENDING);
+                ok(result.value === null);
+                deepEqual(result.reasonStrings, ['the delay of ', ' seconds has not yet elapsed, only ', ' seconds have elapsed so far']);
+                deepEqual(result.reasonValues, [2, 1.999]);
+            });
+
+            it('Should not modify the currentResult after the delay has passed', () => {
+                const action = new actions.Delay(10);
+                const result = action.execute([document.body, document.head], {executionStart: 5000, checkStart: 5010});
+                eq(result.status, RESULT_STATUS_SUCCESS);
+                lengthOf(result.value, 2);
+                ok(result.value[0] === document.body);
+                ok(result.value[1] === document.head);
+            });
+        });
+
+        describe('#describe()', () => {
+            it('Should describe the delay amount', () => {
+                eq(new actions.Delay('1s').describe(), 'waits until 1 seconds have elapsed since the start of the execution');
+                eq(new actions.Delay(10).describe(), 'waits until 0.01 seconds have elapsed since the start of the execution');
+                eq(new actions.Delay(2000).describe(), 'waits until 2 seconds have elapsed since the start of the execution');
             });
         });
     });

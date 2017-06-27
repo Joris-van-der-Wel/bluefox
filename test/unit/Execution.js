@@ -24,6 +24,7 @@ describe('Execution', () => {
             configuration: Object.freeze({
                 timeout,
                 action,
+                additionalCheckTimeout: Object.freeze([timeout]),
             }),
             describe: sinon.spy(() => 'Expression Mock Describe'),
         });
@@ -249,6 +250,44 @@ describe('Execution', () => {
             eq(executeError.actionFailure, 'action mock 2 is pending');
             eq(executeError.expression, expression2);
             eq(executeError.fullExpression, expression3);
+        });
+
+        it('Should pass metaData about the time at execution and check start', () => {
+            const h1 = document.createElement('h1');
+            const action0 = createActionMock(() => executeSuccess(h1));
+            const action1 = createActionMock(() => executePendingTag`action mock is pending`);
+            const expression0 = createExpressionMock(action0, [], 1234);
+            const expression1 = createExpressionMock(action1, [expression0], 1234);
+
+            const execution = new Execution(expression1, documentObservers, 12345);
+            execution.createTimer = createTimerMock;
+            let now = 40000;
+            execution.now = () => now;
+
+            execution.execute().catch(() => {});
+
+            now += 1000;
+            execution.check();
+
+            now += 1500;
+            execution.check();
+
+            isTrue(action0.execute.calledThrice);
+            isTrue(action1.execute.calledThrice);
+            eq(action0.execute.firstCall.args[1].executionStart, 40000);
+            eq(action0.execute.firstCall.args[1].checkStart, 40000);
+            eq(action1.execute.firstCall.args[1].executionStart, 40000);
+            eq(action1.execute.firstCall.args[1].checkStart, 40000);
+
+            eq(action0.execute.secondCall.args[1].executionStart, 40000);
+            eq(action0.execute.secondCall.args[1].checkStart, 41000);
+            eq(action1.execute.secondCall.args[1].executionStart, 40000);
+            eq(action1.execute.secondCall.args[1].checkStart, 41000);
+
+            eq(action0.execute.thirdCall.args[1].executionStart, 40000);
+            eq(action0.execute.thirdCall.args[1].checkStart, 42500);
+            eq(action1.execute.thirdCall.args[1].executionStart, 40000);
+            eq(action1.execute.thirdCall.args[1].checkStart, 42500);
         });
 
         describe('Timeout failure message', () => {

@@ -1,7 +1,7 @@
 'use strict';
 
 const {describe, it, beforeEach, before} = require('mocha-sugar-free');
-const {assert: {strictEqual: eq, lengthOf, throws, isTrue, isUndefined}} = require('chai');
+const {assert: {ok, strictEqual: eq, lengthOf, throws, isTrue, isUndefined, deepEqual}} = require('chai');
 const jsdom = require('jsdom');
 const sinon = require('sinon');
 
@@ -223,6 +223,7 @@ describe('Expression', () => {
                 .timeout('4.5s')
                 .target(document)
                 .documentInteractive()
+                .delay('3s')
                 .action(new actions.DocumentInteractive())
                 .selectorAll('div.gallery-item')
                 .amount(1, Infinity)
@@ -234,11 +235,12 @@ describe('Expression', () => {
                 .amount(2, 10)
                 .describe(),
                 'The expression sets the target to <#document>, waits up to 4.5 seconds until the HTML document has finished parsing, ' +
-                'waits up to 4.5 seconds until the HTML document has finished parsing, finds all descendant elements matching the CSS ' +
-                'selector “div.gallery-item”, waits up to 4.5 seconds until a result is found, finds the first descendant element matc' +
-                'hing the CSS selector “.title”, waits up to 4.5 seconds until all synchronous resources of the HTML document have bee' +
-                'n loaded, finds the first element matching the XPath expression “./../section”, finds all elements matching the XPath' +
-                ' expression “.//img”, waits up to 10 seconds until between 2 and 10 (inclusive) results are found.'
+                'waits until 3 seconds have elapsed since the start of the execution, waits up to 4.5 seconds until the HTML document ' +
+                'has finished parsing, finds all descendant elements matching the CSS selector “div.gallery-item”, waits up to 4.5 sec' +
+                'onds until a result is found, finds the first descendant element matching the CSS selector “.title”, waits up to 4.5 ' +
+                'seconds until all synchronous resources of the HTML document have been loaded, finds the first element matching the X' +
+                'Path expression “./../section”, finds all elements matching the XPath expression “.//img”, waits up to 10 seconds unt' +
+                'il between 2 and 10 (inclusive) results are found.'
             );
         });
 
@@ -252,6 +254,28 @@ describe('Expression', () => {
                 'The expression sets the target to <#document>, finds all descendant elements matching the CSS selector “div.gallery-i' +
                 'tem”, waits up to 4.5 seconds until a result is found.'
             );
+        });
+    });
+
+    describe('#configuration.additionalCheckTimeout', () => {
+        it('Should add the timeout to the array', () => {
+            const root = new Expression(null, new actions.Noop(), 12345, () => {});
+            deepEqual(root.configuration.additionalCheckTimeout, [12345]);
+        });
+
+        it('Should be frozen', () => {
+            const root = new Expression(null, new actions.Noop(), 12345, () => {});
+            ok(Object.isFrozen(root.configuration.additionalCheckTimeout));
+        });
+
+        it('Should add action.additionalCheckTimeout to the array', () => {
+            const action = {
+                execute: () => {},
+                describe: () => {},
+                additionalCheckTimeout: [678, 901],
+            };
+            const root = new Expression(null, action, 12345, () => {});
+            deepEqual(root.configuration.additionalCheckTimeout, [12345, 678, 901]);
         });
     });
 });
