@@ -1,3 +1,2 @@
-
-
-[![Greenkeeper badge](https://badges.greenkeeper.io/Joris-van-der-Wel/bluefox.svg)](https://greenkeeper.io/)
+# Bluefox
+[![Build Status](https://travis-ci.org/Joris-van-der-Wel/bluefox.svg?branch=master)](https://travis-ci.org/Joris-van-der-Wel/bluefox) [![Coverage Status](https://coveralls.io/repos/github/Joris-van-der-Wel/bluefox/badge.svg?branch=master)](https://coveralls.io/github/Joris-van-der-Wel/bluefox?branch=master) [![Greenkeeper badge](https://badges.greenkeeper.io/Joris-van-der-Wel/bluefox.svg)](https://greenkeeper.io/) [![Known Vulnerabilities](https://snyk.io/test/github/joris-van-der-wel/bluefox/badge.svg)](https://snyk.io/test/github/joris-van-der-wel/bluefox)
