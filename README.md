@@ -24,7 +24,7 @@ wait.timeout('5s').selector('section#main > div.contactInformation > a.viewProfi
 <html>
 <head>
   <title>Hi!</title>
-  <script src="../standalone.js"></script>
+  <script src="node_modules/bluefox/standalone.js"></script>
   <script>
     (async () => {
       console.log(new Date(), 'Waiting...');
