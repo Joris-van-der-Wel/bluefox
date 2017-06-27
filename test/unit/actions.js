@@ -1,7 +1,7 @@
 'use strict';
 
 const {describe, it, before, beforeEach, after} = require('mocha-sugar-free');
-const {assert: {isNull, isFalse, isTrue, ok, throws, strictEqual: eq, lengthOf, deepEqual}} = require('chai');
+const {assert: {isNull, isFalse, isTrue, ok, throws, strictEqual: eq, lengthOf, deepEqual, match}} = require('chai');
 const jsdom = require('jsdom');
 
 const actions = require('../../lib/actions');
@@ -36,6 +36,25 @@ describe('actions', () => {
             throws(() => actions.parseTimeoutArgument({}), /invalid.*timeout.*argument/i);
             throws(() => actions.parseTimeoutArgument(new Date()), /invalid.*timeout.*argument/i);
             throws(() => actions.parseTimeoutArgument(Symbol()), /invalid.*timeout.*argument/i);
+        });
+    });
+
+    describe('describeCallback', () => {
+        it('Should stringify functions', () => {
+            eq(actions.describeCallback(() => 'foo'), '() => \'foo\'');
+            // eslint-disable-next-line prefer-arrow-callback
+            match(actions.describeCallback(function() { return 1 * 2; }), /^function\s*\(\)\s*{\s*return 1\s*\*\s*2;\s*}$/);
+        });
+
+        it('Should trim strings longer than 64 characters', () => {
+            eq(
+                actions.describeCallback(() => 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'),
+                `() => 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'`
+            );
+            eq(
+                actions.describeCallback(() => 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'),
+                `() => 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx…`
+            );
         });
     });
 
@@ -207,7 +226,7 @@ describe('actions', () => {
             });
 
             it('Should describe a callback', () => {
-                eq(new actions.Target(() => window).describe(), 'sets the target using a callback');
+                eq(new actions.Target(() => window).describe(), 'sets the target using a callback: `() => window`');
             });
         });
     });
@@ -387,7 +406,7 @@ describe('actions', () => {
             it('Should describe a callback', () => {
                 eq(
                     new actions.Selector(() => 'foo > bar').describe(),
-                    'finds the first descendant element matching a CSS selector from a callback'
+                    'finds the first descendant element matching a CSS selector from a callback: `() => \'foo > bar\'`'
                 );
             });
         });
@@ -491,7 +510,7 @@ describe('actions', () => {
             it('Should describe a callback', () => {
                 eq(
                     new actions.SelectorAll(() => 'foo > bar').describe(),
-                    'finds all descendant elements matching a CSS selector from a callback'
+                    'finds all descendant elements matching a CSS selector from a callback: `() => \'foo > bar\'`'
                 );
             });
         });
@@ -575,7 +594,7 @@ describe('actions', () => {
             it('Should describe a callback', () => {
                 eq(
                     new actions.XPath(() => 'foo > bar').describe(),
-                    'finds the first element matching a XPath expression from a callback'
+                    'finds the first element matching a XPath expression from a callback: `() => \'foo > bar\'`'
                 );
             });
         });
@@ -678,8 +697,9 @@ describe('actions', () => {
 
             it('Should describe a callback', () => {
                 eq(
-                    new actions.XPathAll(() => './/foo/bar').describe(),
-                    'finds all elements matching a XPath expression from a callback'
+                    new actions.XPathAll(() => './/foo/bar/bar/bar/bar/bar/bar/bar/bar/bar/bar/bar/bar/bar/bar/bar/bar/bar/bar').describe(),
+                    'finds all elements matching a XPath expression from a callback: ' +
+                    '`() => \'.//foo/bar/bar/bar/bar/bar/bar/bar/bar/bar/bar/bar/bar/b…`'
                 );
             });
         });
