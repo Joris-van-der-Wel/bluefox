@@ -1,7 +1,7 @@
 {
   "name": "bluefox",
   "version": "1.0.0",
-  "description": "TODO",
+  "description": "The bluefox library lets you be notified when a DOM tree has reached a specific condition, using a convenient syntax. It has been designed for high accuracy and low overhead.",
   "main": "lib/bluefox.js",
   "files": [
     "lib",
