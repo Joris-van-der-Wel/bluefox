@@ -29,6 +29,7 @@ describe('Waiting for document.readyState', {timeout: 10000, slow: 2000}, () => 
         });
         const progress = await getProgress();
 
+        console.log('should wait for documentInteractive progress=', JSON.stringify(progress, null, 2));
         eq(progress[0], 'HEAD begin');
         eq(progress[1], 'foo script');
         eq(progress[2], 'BODY end');
@@ -80,7 +81,7 @@ describe('Waiting for document.readyState', {timeout: 10000, slow: 2000}, () => 
         });
         const progress = await getProgress();
 
-        // console.log(JSON.stringify(progress, null, 2));
+        console.log('should wait for documentComplete progress=', JSON.stringify(progress, null, 2));
         eq(progress[0], 'HEAD begin');
         eq(progress[1], 'foo script');
         eq(progress[2], 'BODY end');
