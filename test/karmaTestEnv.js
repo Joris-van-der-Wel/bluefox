@@ -42,14 +42,15 @@ global.BLUEFOX_TEST_ENV = {
 
         await new Promise((resolve, reject) => {
             const oldDocument = iframe.contentDocument;
-            iframe.contentWindow.addEventListener('unload', () => setTimeout(() => {
-                if (iframe.contentDocument === oldDocument) {
-                    reject(Error('Assertion Failed: Expected the navigation to have occurred by now'));
-                    return;
-                }
-                resolve();
-            }, 0));
-
+            iframe.contentWindow.addEventListener('unload', () => {
+                setTimeout(() => {
+                    if (iframe.contentDocument === oldDocument) {
+                        reject(Error('Assertion Failed: Expected the navigation to have occurred by now'));
+                        return;
+                    }
+                    resolve();
+                }, 0);
+            });
             iframe.src = url;
         });
 

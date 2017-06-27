@@ -4,8 +4,8 @@
         <script>
             window.progressBeforeInit=[];
             window.reportProgress=window.reportProgress||(key=>progressBeforeInit.push(key));
-            document.addEventListener('DOMContentLoaded', () => window.reportProgress('DOMContentLoaded'));
-            window.addEventListener('load', () => window.reportProgress('load'));
+            document.addEventListener('DOMContentLoaded', () => {window.reportProgress('DOMContentLoaded')});
+            window.addEventListener('load', () => {window.reportProgress('load')});
         </script>
         <script>reportProgress('HEAD begin')</script>
         <title>readyState</title>
