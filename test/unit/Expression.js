@@ -232,6 +232,7 @@ describe('Expression', () => {
                 .xpath('./../section')
                 .timeout('10s')
                 .xpathAll('.//img')
+                .isDisplayed()
                 .amount(2, 10)
                 .describe(),
                 'The expression sets the target to <#document>, waits up to 4.5 seconds until the HTML document has finished parsing, ' +
@@ -239,8 +240,8 @@ describe('Expression', () => {
                 'has finished parsing, finds all descendant elements matching the CSS selector “div.gallery-item”, waits up to 4.5 sec' +
                 'onds until a result is found, finds the first descendant element matching the CSS selector “.title”, waits up to 4.5 ' +
                 'seconds until all synchronous resources of the HTML document have been loaded, finds the first element matching the X' +
-                'Path expression “./../section”, finds all elements matching the XPath expression “.//img”, waits up to 10 seconds unt' +
-                'il between 2 and 10 (inclusive) results are found.'
+                'Path expression “./../section”, finds all elements matching the XPath expression “.//img”, but only including element' +
+                's which are displayed on the page, waits up to 10 seconds until between 2 and 10 (inclusive) results are found.'
             );
         });
 

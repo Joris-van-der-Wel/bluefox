@@ -1,6 +1,6 @@
 'use strict';
 
-const {describe, it, before, beforeEach, after} = require('mocha-sugar-free');
+const {describe, it, before, beforeEach, after, afterEach} = require('mocha-sugar-free');
 const {assert: {isNull, isFalse, isTrue, ok, throws, strictEqual: eq, lengthOf, deepEqual, match}} = require('chai');
 const jsdom = require('jsdom');
 
@@ -71,6 +71,7 @@ describe('actions', () => {
             isFalse(new actions.DocumentInteractive().wantsDefaultAmountCheck);
             isFalse(new actions.DocumentComplete().wantsDefaultAmountCheck);
             isFalse(new actions.Delay(123).wantsDefaultAmountCheck);
+            isFalse(new actions.IsDisplayed().wantsDefaultAmountCheck);
         });
 
         it('Should set #appliesAmountCheck to true for actions that check the amount', () => {
@@ -85,6 +86,7 @@ describe('actions', () => {
             isFalse(new actions.DocumentInteractive().appliesAmountCheck);
             isFalse(new actions.DocumentComplete().appliesAmountCheck);
             isFalse(new actions.Delay(123).appliesAmountCheck);
+            isFalse(new actions.IsDisplayed().appliesAmountCheck);
         });
     });
 
@@ -101,6 +103,7 @@ describe('actions', () => {
             deepEqual(new actions.DocumentInteractive().additionalCheckTimeout, []);
             deepEqual(new actions.DocumentComplete().additionalCheckTimeout, []);
             deepEqual(new actions.Delay(123).additionalCheckTimeout, [123]);
+            deepEqual(new actions.IsDisplayed().additionalCheckTimeout, []);
         });
     });
 
@@ -959,6 +962,84 @@ describe('actions', () => {
                 eq(new actions.Delay('1s').describe(), 'waits until 1 seconds have elapsed since the start of the execution');
                 eq(new actions.Delay(10).describe(), 'waits until 0.01 seconds have elapsed since the start of the execution');
                 eq(new actions.Delay(2000).describe(), 'waits until 2 seconds have elapsed since the start of the execution');
+            });
+        });
+    });
+
+    describe('IsDisplayed', () => {
+        it('Should be frozen', () => {
+            ok(Object.isFrozen(new actions.IsDisplayed()));
+        });
+
+        describe('#execute()', () => {
+            const action = new actions.IsDisplayed();
+            let elementWithFormattingBox0;
+            let elementWithFormattingBox1;
+            let elementWithoutFormattingBox0;
+            let elementWithoutFormattingBox1;
+
+            beforeEach(() => {
+                elementWithFormattingBox0 = document.createElement('div');
+                elementWithFormattingBox1 = document.createElement('div');
+                elementWithoutFormattingBox0 = document.createElement('div');
+                elementWithoutFormattingBox1 = document.createElement('div');
+
+                window.HTMLDivElement.prototype.getBoundingClientRect = function() {
+                    if (this === elementWithFormattingBox0 || this === elementWithFormattingBox1) {
+                        return Object.freeze({x: 0, y: 0, width: 1, height: 1, top: 0, right: 1, bottom: 1, left: 0});
+                    }
+                    return Object.freeze({x: 0, y: 0, width: 0, height: 0, top: 0, right: 0, bottom: 0, left: 0});
+                };
+            });
+
+            afterEach(() => {
+                delete window.HTMLDivElement.prototype.getBoundingClientRect;
+            });
+
+            it('Should return null as-is', () => {
+                const result = action.execute(null);
+                eq(result.status, RESULT_STATUS_SUCCESS);
+                ok(result.value === null);
+            });
+
+            it('Should return an empty array as-is', () => {
+                const result = action.execute([]);
+                eq(result.status, RESULT_STATUS_SUCCESS);
+                ok(Object.isFrozen(result.value));
+                deepEqual(result.value, []);
+            });
+
+            it('Should return null if an element is passed without a formatting box', () => {
+                const result = action.execute(elementWithoutFormattingBox0);
+                eq(result.status, RESULT_STATUS_SUCCESS);
+                ok(result.value === null);
+            });
+
+            it('Should return an element as-is if it has a formatting box', () => {
+                const result = action.execute(elementWithFormattingBox0);
+                eq(result.status, RESULT_STATUS_SUCCESS);
+                ok(result.value === elementWithFormattingBox0);
+            });
+
+            it('Should filter elements without a formatting box if an array is passed', () => {
+                const result = action.execute([
+                    elementWithFormattingBox0,
+                    elementWithFormattingBox1,
+                    elementWithoutFormattingBox0,
+                    elementWithoutFormattingBox1,
+                ]);
+                eq(result.status, RESULT_STATUS_SUCCESS);
+                ok(Array.isArray(result.value));
+                ok(Object.isFrozen(result.value));
+                lengthOf(result.value, 2);
+                ok(result.value[0] === elementWithFormattingBox0);
+                ok(result.value[1] === elementWithFormattingBox1);
+            });
+        });
+
+        describe('#describe()', () => {
+            it('Should describe the filter', () => {
+                eq(new actions.IsDisplayed().describe(), 'but only including elements which are displayed on the page');
             });
         });
     });

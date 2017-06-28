@@ -4,3 +4,4 @@
 require('./selector');
 require('./readyState');
 require('./xpath');
+require('./displayed');
