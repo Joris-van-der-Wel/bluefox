@@ -654,4 +654,99 @@ describe('dom utility', () => {
             }
         });
     });
+
+    describe('getBoundingClientRect', () => {
+        it('Should call the DOM method getBoundingClientRect()', () => {
+            const element = document.createElement('div');
+            deepEqual(dom.getBoundingClientRect(element), element.getBoundingClientRect());
+        });
+    });
+
+    describe('hasFormattingBox', () => {
+        describe('[jsdom]', {skip: !USE_JSDOM}, () => {
+            const override = obj => {
+                Object.freeze(obj);
+                window.HTMLDivElement.prototype.getBoundingClientRect = () => obj;
+            };
+
+            afterEach(() => {
+                delete window.HTMLDivElement.prototype.getBoundingClientRect;
+            });
+
+            it('Should return true if the given result item has a formatting box that is larger than 0x0', () => {
+                override({x: 0, y: -4279, width: 1905, height: 481, top: -4279, right: 1905, bottom: -3798, left: 0});
+                isTrue(dom.hasFormattingBox(document.createElement('div')));
+
+                override({x: 0, y: 0, width: 1, height: 1, top: 0, right: 1, bottom: 1, left: 0});
+                isTrue(dom.hasFormattingBox(document.createElement('div')));
+
+                override({x: 0, y: 0, width: 0.0001, height: 0.0001, top: 0, right: 0.0001, bottom: 0.0001, left: 0});
+                isTrue(dom.hasFormattingBox(document.createElement('div')));
+            });
+
+            it('Should return false if the given result item has no formatting box', () => {
+                override({x: 0, y: 0, width: 0, height: 1, top: 0, right: 0, bottom: 1, left: 0});
+                isFalse(dom.hasFormattingBox(document.createElement('div')));
+
+                override({x: 0, y: 0, width: 1, height: 0, top: 0, right: 1, bottom: 0, left: 0});
+                isFalse(dom.hasFormattingBox(document.createElement('div')));
+
+                override({x: 0, y: 0, width: 0, height: 0, top: 0, right: 0, bottom: 0, left: 0});
+                isFalse(dom.hasFormattingBox(document.createElement('div')));
+            });
+        });
+
+        describe('[not jsdom]', {skip: USE_JSDOM}, () => {
+            let element;
+
+            beforeEach(() => {
+                element = document.createElement('div');
+                document.body.appendChild(element);
+            });
+
+            afterEach(() => {
+                element.remove();
+                element = null;
+            });
+
+            it('Should return true for WindowProxy', () => {
+                isTrue(dom.hasFormattingBox(window));
+            });
+
+            it('Should return true for HTMLDocument', () => {
+                isTrue(dom.hasFormattingBox(document));
+            });
+
+            it('Should return true if the given result item has a formatting box that is larger than 0x0', () => {
+                element.style = 'width: 100px; height: 150px;';
+                isTrue(dom.hasFormattingBox(element));
+
+                element.style = 'width: 1px; height: 1px;';
+                isTrue(dom.hasFormattingBox(element));
+
+                // visibility: hidden still affects the layout of the page
+                element.style = 'width: 100px; height: 150px; visibility: hidden;';
+                isTrue(dom.hasFormattingBox(element));
+            });
+
+            it('Should return false if the given result item is not part of the page', () => {
+                const disconnectedElement = document.createElement('div');
+                disconnectedElement.style = 'width: 100px; height: 150px;';
+                isFalse(dom.hasFormattingBox(disconnectedElement));
+            });
+
+            it('Should return false if the given result item has no formatting box', () => {
+                isFalse(dom.hasFormattingBox(element));
+
+                element.style = 'width: 0; height: 1px;';
+                isFalse(dom.hasFormattingBox(element));
+
+                element.style = 'width: 1px; height: 0;';
+                isFalse(dom.hasFormattingBox(element));
+
+                element.style = 'width: 100px; height: 150px; display: none;';
+                isFalse(dom.hasFormattingBox(element));
+            });
+        });
+    });
 });
