@@ -253,6 +253,27 @@ describe('dom utility', () => {
         });
     });
 
+    describe('resultItemToDocumentElement', () => {
+        it('should return the root element if a HTMLDocument is passed', () => {
+            ok(dom.resultItemToDocumentElement(document) === document.documentElement);
+        });
+
+        it('should return the root element of the active document of a WindowProxy', () => {
+            ok(dom.resultItemToDocumentElement(window) === document.documentElement);
+        });
+
+        it('should return the root element of the ownerDocument of dom nodes', () => {
+            ok(dom.resultItemToDocumentElement(document.createElement('div')) === document.documentElement);
+        });
+
+        it('should throw for invalid types', () => {
+            throws(() => dom.resultItemToDocumentElement(), /resultItemToDocument.*invalid.*argument/i);
+            throws(() => dom.resultItemToDocumentElement(null), /resultItemToDocument.*invalid.*argument/i);
+            throws(() => dom.resultItemToDocumentElement(123), /resultItemToDocument.*invalid.*argument/i);
+            throws(() => dom.resultItemToDocumentElement('foo'), /resultItemToDocument.*invalid.*argument/i);
+        });
+    });
+
     describe('resultItemToParentNode', () => {
         it('should return the same HTMLDocument if a HTMLDocument is passed', () => {
             ok(dom.resultItemToParentNode(document) === document);
@@ -273,6 +294,30 @@ describe('dom utility', () => {
             throws(() => dom.resultItemToParentNode(null), /resultItemToParentNode.*invalid.*argument/i);
             throws(() => dom.resultItemToParentNode(123), /resultItemToParentNode.*invalid.*argument/i);
             throws(() => dom.resultItemToParentNode('foo'), /resultItemToParentNode.*invalid.*argument/i);
+        });
+    });
+
+    describe('resultItemToElement', () => {
+        it('should return the root element if a HTMLDocument is passed', () => {
+            ok(dom.resultItemToElement(document) === document.documentElement);
+        });
+
+        it('should return the same Element if an Element is passed', () => {
+            const element = document.createElement('div');
+            ok(dom.resultItemToElement(element) === element);
+            ok(dom.resultItemToElement(document.documentElement) === document.documentElement);
+        });
+
+        it('should return the root element of the active document of a WindowProxy', () => {
+            ok(dom.resultItemToElement(window) === document.documentElement);
+        });
+
+        it('should throw for invalid types', () => {
+            throws(() => dom.resultItemToElement(document.createTextNode('bla')), /resultItemToElement.*invalid.*argument/i);
+            throws(() => dom.resultItemToElement(), /resultItemToElement.*invalid.*argument/i);
+            throws(() => dom.resultItemToElement(null), /resultItemToElement.*invalid.*argument/i);
+            throws(() => dom.resultItemToElement(123), /resultItemToElement.*invalid.*argument/i);
+            throws(() => dom.resultItemToElement('foo'), /resultItemToElement.*invalid.*argument/i);
         });
     });
 
