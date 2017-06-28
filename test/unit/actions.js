@@ -3,6 +3,7 @@
 const {describe, it, before, beforeEach, after, afterEach} = require('mocha-sugar-free');
 const {assert: {isNull, isFalse, isTrue, ok, throws, strictEqual: eq, lengthOf, deepEqual, match}} = require('chai');
 const jsdom = require('jsdom');
+const sinon = require('sinon');
 
 const actions = require('../../lib/actions');
 const {RESULT_STATUS_SUCCESS, RESULT_STATUS_PENDING} = require('../../lib/result');
@@ -1040,6 +1041,94 @@ describe('actions', () => {
         describe('#describe()', () => {
             it('Should describe the filter', () => {
                 eq(new actions.IsDisplayed().describe(), 'but only including elements which are displayed on the page');
+            });
+        });
+    });
+
+    describe('Check', () => {
+        it('Should be frozen', () => {
+            ok(Object.isFrozen(new actions.Check(() => true)));
+        });
+
+        it('Should throw for invalid arguments', () => {
+            throws(() => new actions.Check(), /check.*callback.*function/i);
+            throws(() => new actions.Check(123), /check.*callback.*function/i);
+        });
+
+        describe('#execute()', () => {
+            it('Should return null as-is', () => {
+                const callback = sinon.spy(() => true);
+                const result = new actions.Check(() => true).execute(null);
+                eq(result.status, RESULT_STATUS_SUCCESS);
+                ok(result.value === null);
+                eq(callback.callCount, 0);
+            });
+
+            it('Should return an empty array as-is', () => {
+                const callback = sinon.spy(() => true);
+                const result = new actions.Check(() => true).execute([]);
+                eq(result.status, RESULT_STATUS_SUCCESS);
+                ok(Object.isFrozen(result.value));
+                deepEqual(result.value, []);
+                eq(callback.callCount, 0);
+            });
+
+            it('Should return null if a single element is passed and the callback returns falsy', () => {
+                const callback = sinon.spy(() => 0);
+                const element = document.createElement('div');
+                const result = new actions.Check(callback).execute(element);
+                eq(result.status, RESULT_STATUS_SUCCESS);
+                ok(result.value === null);
+                eq(callback.callCount, 1);
+                lengthOf(callback.firstCall.args, 1);
+                ok(callback.firstCall.args[0] === element);
+            });
+
+            it('Should return an element as-is if a single element is passed and the callback returns truthy', () => {
+                const callback = sinon.spy(() => 'truthy');
+                const element = document.createElement('div');
+                const result = new actions.Check(callback).execute(element);
+                eq(result.status, RESULT_STATUS_SUCCESS);
+                ok(result.value === element);
+                eq(callback.callCount, 1);
+                lengthOf(callback.firstCall.args, 1);
+                ok(callback.firstCall.args[0] === element);
+            });
+
+            it('Should filter elements for which the callback returns falsy', () => {
+                const element0 = document.createElement('div');
+                const element1 = document.createElement('div');
+                const element2 = document.createElement('div');
+                const element3 = document.createElement('div');
+                const callback = sinon.spy(element => element === element1 || element === element2);
+
+                const result = new actions.Check(callback).execute([
+                    element0,
+                    element1,
+                    element2,
+                    element3,
+                ]);
+                eq(result.status, RESULT_STATUS_SUCCESS);
+                ok(Array.isArray(result.value));
+                ok(Object.isFrozen(result.value));
+                lengthOf(result.value, 2);
+                ok(result.value[0] === element1);
+                ok(result.value[1] === element2);
+
+                eq(callback.callCount, 4);
+                ok(callback.getCall(0).args[0] === element0);
+                ok(callback.getCall(1).args[0] === element1);
+                ok(callback.getCall(2).args[0] === element2);
+                ok(callback.getCall(3).args[0] === element3);
+            });
+        });
+
+        describe('#describe()', () => {
+            it('Should describe the filter', () => {
+                eq(
+                    new actions.Check(element => element.foo === 123).describe(),
+                    'but only including results that match a callback: `element => element.foo === 123`'
+                );
             });
         });
     });
