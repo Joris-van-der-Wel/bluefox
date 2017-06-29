@@ -8,9 +8,14 @@ The functionality is similar to the wait functions found in many WebDriver/Selen
 The overhead that this library introduces to the page being tested is kept as low as possible.
 
 ## Examples
+```
+npm i bluefox
+```
 
+### Webpack / Browserify
 ```javascript
-const Bluefox = require('bluefox'); // browserify / webpack
+// browserify / webpack / jsdom
+const Bluefox = require('bluefox');
 const wait = new Bluefox().target(window);
 wait.timeout('5s').selector('section#main > div.contactInformation > a.viewProfile').then(link => {
   link.click();
@@ -19,12 +24,14 @@ wait.timeout('5s').selector('section#main > div.contactInformation > a.viewProfi
 });
 ```
 
+### HTML Document
 ```html
 <!DOCTYPE html>
 <html>
 <head>
   <title>Hi!</title>
   <script src="node_modules/bluefox/standalone.js"></script>
+  <!-- <script src="node_modules/bluefox/standalone.min.js"></script> -->
   <script>
     (async () => {
       console.log(new Date(), 'Waiting...');
@@ -49,5 +56,28 @@ wait.timeout('5s').selector('section#main > div.contactInformation > a.viewProfi
 </script>
 </body>
 ```
+
+### WebDriver
+```javascript
+const bluefoxString = require('bluefox/standalone.string.js');
+// const bluefoxString = require('bluefox/standalone.min.string.js');
+const wd = require('wd');
+const browser = wd.promiseRemote('http://localhost:9515');
+(async () => {
+  await browser.init({pageLoadStrategy: 'none'});
+  await browser.setAsyncScriptTimeout(30000);
+  await browser.get(`http://example.com`);
+  await browser.execute(bluefoxString);
+  await browser.execute(`wait = new Bluefox().target(window).timeout('10s')`);
+  const result = await browser.executeAsync(`
+    const resolve = arguments[arguments.length - 1];
+    wait.documentComplete().selector('p > a[href]')
+      .then(() => resolve({okay: true}))
+      .catch(err => resolve({error: err.toString()}))
+  `);
+  console.log('result:', result);
+})();
+```
+
 ## API
 TODO
