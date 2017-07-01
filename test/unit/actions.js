@@ -6,7 +6,7 @@ const jsdom = require('jsdom');
 const sinon = require('sinon');
 
 const actions = require('../../lib/actions');
-const {RESULT_STATUS_SUCCESS, RESULT_STATUS_PENDING} = require('../../lib/result');
+const {RESULT_STATUS_SUCCESS, RESULT_STATUS_PENDING, RESULT_STATUS_FATAL_FAILURE} = require('../../lib/result');
 
 const USE_JSDOM = !global.window;
 
@@ -186,12 +186,14 @@ describe('actions', () => {
                 isNull(result.value);
             });
 
-            it('Should remain pending if the callback returns something that is not a result item', () => {
+            it('Should result in an error if the callback returns something that is not a result item', () => {
                 const action = new actions.Target(() => 123);
                 const result = action.execute(document);
-                eq(result.status, RESULT_STATUS_PENDING);
+                eq(result.status, RESULT_STATUS_FATAL_FAILURE);
                 ok(result.value === null);
-                deepEqual(result.reasonStrings, ['a value that is not a Window nor a Node was set as the target']);
+                deepEqual(result.reasonStrings, [
+                    'a value that is not a WindowProxy nor a HTMLDocument, nor an Element was set as the target',
+                ]);
                 deepEqual(result.reasonValues, []);
             });
         });
