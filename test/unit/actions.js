@@ -541,6 +541,8 @@ describe('actions', () => {
                 fooB = document.createElement('div');
                 fooA.className = 'foo';
                 fooB.className = 'foo';
+                fooA.textContent = 'fooA!';
+                fooB.textContent = 'fooB!';
                 foo.appendChild(fooA);
                 foo.appendChild(fooB);
 
@@ -587,6 +589,15 @@ describe('actions', () => {
                 eq(result.status, RESULT_STATUS_SUCCESS);
                 ok(result.value === fooA);
             });
+
+            it('Should result in an error if the result is not an Element or null', () => {
+                const action = new actions.XPath('.//div/text()');
+                const result = action.execute(foo);
+                eq(result.status, RESULT_STATUS_FATAL_FAILURE);
+                ok(result.value === null);
+                deepEqual(result.reasonStrings, ['a value that is not an Element was returned by the XPath expression']);
+                deepEqual(result.reasonValues, []);
+            });
         });
 
         describe('#describe()', () => {
@@ -625,6 +636,8 @@ describe('actions', () => {
                 fooB = document.createElement('div');
                 fooA.className = 'foo';
                 fooB.className = 'foo';
+                fooA.textContent = 'fooA';
+                fooB.textContent = 'fooB';
                 foo.appendChild(fooA);
                 foo.appendChild(fooB);
 
@@ -690,6 +703,15 @@ describe('actions', () => {
                 lengthOf(result.value, 2);
                 ok(result.value[0] === fooA);
                 ok(result.value[1] === fooB);
+            });
+
+            it('Should result in an error if the result is not an Element or null', () => {
+                const action = new actions.XPathAll('.//div/text()');
+                const result = action.execute(foo);
+                eq(result.status, RESULT_STATUS_FATAL_FAILURE);
+                ok(result.value === null);
+                deepEqual(result.reasonStrings, ['a value that is not an Element was returned by the XPath expression']);
+                deepEqual(result.reasonValues, []);
             });
         });
 
