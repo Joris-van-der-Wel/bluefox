@@ -143,6 +143,9 @@ link.click();
 
 const anotherLink = await wait.target([someElement, anotherElement]).selector('a.someLink');
 anotherLink.click();
+
+const needsSomeEscaping = '#"b[l]a'
+await wait.target(window).selector`div[data-foo=${needsSomeEscaping}]`;
 ```
 
 
@@ -152,6 +155,9 @@ Return all `Element` instances (as an array) that match the given CSS selector a
 ```javascript
 const links = await wait.target(window).selectorAll('.todoList a');
 links.forEach(link => link.click());
+
+const needsSomeEscaping = '#"b[l]a'
+await wait.target(window).selectorAll`div[data-foo=${needsSomeEscaping}]`;
 ```
 
 #### .xpath(expression)

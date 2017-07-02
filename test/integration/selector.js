@@ -107,4 +107,17 @@ describe('Waiting for a CSS Selector', {slow: 2000, timeout: 20000}, () => {
 
         isBelow(progress.indexOf('modification'), progress.indexOf('after wait'));
     });
+
+    it('Should perform escaping if a tagged template literal is passed', async () => {
+        await navigate('static/mutation-add-element.html');
+        await run(async ({window, Bluefox, reportProgress}) => {
+            await new Bluefox().target(window).timeout('10s').selector`strong[data-with-special-chars=${'123 #bla'}]`;
+            reportProgress('after wait 0');
+        });
+        const progress = await getProgress();
+
+        isAtLeast(progress.indexOf('modification'), 0);
+        isAtLeast(progress.indexOf('after wait 0'), 0);
+        isBelow(progress.indexOf('modification'), progress.indexOf('after wait 0'));
+    });
 });

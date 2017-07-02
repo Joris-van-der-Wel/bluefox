@@ -7,7 +7,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => {
                 reportProgress('modification');
-                firstP.insertAdjacentHTML('afterbegin', '<strong id="modification">bar</strong> ');
+                firstP.insertAdjacentHTML('afterbegin', '<strong id="modification" data-with-special-chars="123 #bla">bar</strong> ');
                 window.mutationObserverMocks && mutationObserverMocks.trigger();
             }, 100);
         });

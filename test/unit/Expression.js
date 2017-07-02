@@ -281,4 +281,52 @@ describe('Expression', () => {
             deepEqual(root.configuration.additionalCheckTimeout, [12345, 678, 901]);
         });
     });
+
+    describe('#selector()', () => {
+        it('Should pass a single string as-is', () => {
+            const root = new Expression(null, new actions.Noop(), 12345, () => {});
+            const selector = root.selector('foo > bar');
+            const action = selector.configuration.action;
+            eq(action.expression, 'foo > bar');
+        });
+
+        it('Should pass a single function as-is', () => {
+            const root = new Expression(null, new actions.Noop(), 12345, () => {});
+            const callback = 'foo > bar';
+            const selector = root.selector(callback);
+            const action = selector.configuration.action;
+            eq(action.expression, callback);
+        });
+
+        it('Should perform escaping when called as a tagged template literal', () => {
+            const root = new Expression(null, new actions.Noop(), 12345, () => {});
+            const selector = root.selector`foo > #${'123#bla'}`;
+            const action = selector.configuration.action;
+            eq(action.expression, 'foo > #\\31 23\\#bla');
+        });
+    });
+
+    describe('#selectorAll()', () => {
+        it('Should pass a single string as-is', () => {
+            const root = new Expression(null, new actions.Noop(), 12345, () => {});
+            const selector = root.selectorAll('foo > bar');
+            const action = selector.configuration.action;
+            eq(action.expression, 'foo > bar');
+        });
+
+        it('Should pass a single function as-is', () => {
+            const root = new Expression(null, new actions.Noop(), 12345, () => {});
+            const callback = 'foo > bar';
+            const selector = root.selectorAll(callback);
+            const action = selector.configuration.action;
+            eq(action.expression, callback);
+        });
+
+        it('Should perform escaping when called as a tagged template literal', () => {
+            const root = new Expression(null, new actions.Noop(), 12345, () => {});
+            const selector = root.selectorAll`foo > #${'123#bla'}`;
+            const action = selector.configuration.action;
+            eq(action.expression, 'foo > #\\31 23\\#bla');
+        });
+    });
 });

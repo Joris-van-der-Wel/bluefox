@@ -749,4 +749,34 @@ describe('dom utility', () => {
             });
         });
     });
+
+    describe('cssSerializeIdentifier', () => {
+        it('Should implement all characters per CSSOM ', () => {
+            const inputArray = new Array(0x100).fill(0).map((_, index) => index);
+            const input = String.fromCharCode(...inputArray);
+
+            const output = '�\\1 \\2 \\3 \\4 \\5 \\6 \\7 \\8 \\9 \\a \\b \\c \\d \\e \\f \\10 \\11 \\12 \\13 \\14 \\15 \\16 \\17 \\18' +
+                ' \\19 \\1a \\1b \\1c \\1d \\1e \\1f \\ \\!\\"\\#\\$\\%\\&\\\'\\(\\)\\*\\+\\,-\\.\\/0123456789\\:\\;\\<\\=\\>\\?\\@ABC' +
+                'DEFGHIJKLMNOPQRSTUVWXYZ\\[\\\\\\]\\^_\\`abcdefghijklmnopqrstuvwxyz\\{\\|\\}\\~\\7f \xa0¡' +
+                '¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ';
+
+            eq(dom.cssSerializeIdentifier(input), output);
+        });
+
+        it('Should escape numbers at the start of the string per CSSOM', () => {
+            eq(dom.cssSerializeIdentifier('0'), '\\30 ');
+            eq(dom.cssSerializeIdentifier('5'), '\\35 ');
+            eq(dom.cssSerializeIdentifier('-5'), '-\\35 ');
+            eq(dom.cssSerializeIdentifier('12345'), '\\31 2345');
+            eq(dom.cssSerializeIdentifier('-12345'), '-\\31 2345');
+        });
+    });
+
+    describe('cssSelectorTag', () => {
+        it('Should construct a CSS Selector with escaping', () => {
+            const foo = '-1234 "bar" #:.';
+            const bar = '"bar" #:.';
+            eq(dom.cssSelectorTag`a[href=${foo}], #${bar}`, 'a[href=-\\31 234\\ \\"bar\\"\\ \\#\\:\\.], #\\"bar\\"\\ \\#\\:\\.');
+        });
+    });
 });
