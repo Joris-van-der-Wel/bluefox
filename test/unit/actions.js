@@ -1156,4 +1156,112 @@ describe('actions', () => {
             });
         });
     });
+
+    describe('ContainsText', () => {
+        it('Should be frozen', () => {
+            ok(Object.isFrozen(new actions.ContainsText('foo')));
+        });
+
+        it('Should throw for invalid text argument', () => {
+            throws(() => new actions.ContainsText(), /containsText.*text.*must.*string.*regexp/i);
+            throws(() => new actions.ContainsText(null), /containsText.*text.*must.*string.*regexp/i);
+            throws(() => new actions.ContainsText(123), /containsText.*text.*must.*string.*regexp/i);
+            throws(() => new actions.ContainsText({}), /containsText.*text.*must.*string.*regexp/i);
+            throws(() => new actions.ContainsText(() => {}), /containsText.*text.*must.*string.*regexp/i);
+        });
+
+        describe('#execute()', () => {
+            let foo;
+            let bar;
+            let baz;
+
+            beforeEach(() => {
+                foo = document.createElement('div');
+                bar = document.createElement('div');
+                baz = document.createElement('div');
+                foo.textContent = 'FOO Foo!';
+                bar.textContent = 'BAR Bar!';
+                baz.textContent = 'BAZ Baz!';
+                bar.appendChild(baz);
+            });
+
+            it('Should return null as-is', () => {
+                const action = new actions.ContainsText('FOO');
+                const result = action.execute(null);
+                eq(result.status, RESULT_STATUS_SUCCESS);
+                ok(result.value === null);
+            });
+
+            it('Should return an empty array as-is', () => {
+                const action = new actions.ContainsText('FOO');
+                const result = action.execute([]);
+                eq(result.status, RESULT_STATUS_SUCCESS);
+                ok(Object.isFrozen(result.value));
+                deepEqual(result.value, []);
+            });
+
+            it('Should return null if an element is passed without the given text', () => {
+                const action = new actions.ContainsText('hello');
+                const result = action.execute(foo);
+                eq(result.status, RESULT_STATUS_SUCCESS);
+                ok(result.value === null);
+            });
+
+            it('Should return null if an element is passed for which the textContent does not match the given RegExp', () => {
+                const action = new actions.ContainsText(/FO$/);
+                const result = action.execute(foo);
+                eq(result.status, RESULT_STATUS_SUCCESS);
+                ok(result.value === null);
+            });
+
+            it('Should return an element as-is if it contains the given text', () => {
+                const action = new actions.ContainsText('FOO');
+                const result = action.execute(foo);
+                eq(result.status, RESULT_STATUS_SUCCESS);
+                ok(result.value === foo);
+            });
+
+            it('Should return an element as-is if the textContent matches the given RegExp', () => {
+                const action = new actions.ContainsText(/FO+/);
+                const result = action.execute(foo);
+                eq(result.status, RESULT_STATUS_SUCCESS);
+                ok(result.value === foo);
+            });
+
+            it('Should filter elements that do not contain the given text', () => {
+                const action = new actions.ContainsText(/FO+/);
+                const result = action.execute([foo, bar, baz]);
+                eq(result.status, RESULT_STATUS_SUCCESS);
+                ok(Array.isArray(result.value));
+                ok(Object.isFrozen(result.value));
+                lengthOf(result.value, 1);
+                ok(result.value[0] === foo);
+            });
+
+            it('Should filter elements that do not contain the given text', () => {
+                const action = new actions.ContainsText(/baz!/i);
+                const result = action.execute([foo, bar, baz]);
+                eq(result.status, RESULT_STATUS_SUCCESS);
+                ok(Array.isArray(result.value));
+                ok(Object.isFrozen(result.value));
+                lengthOf(result.value, 2);
+                ok(result.value[0] === bar);
+                ok(result.value[1] === baz);
+            });
+        });
+
+        describe('#describe()', () => {
+            it('Should describe the filter', () => {
+                eq(
+                    new actions.ContainsText('foo').describe(),
+                    'but only including results that contain the text: “foo”'
+                );
+
+                eq(
+                    new actions.ContainsText(/foo/).describe(),
+                    'but only including results that contain text matching the regular expression: /foo/'
+                );
+            });
+        });
+    });
 });

@@ -228,6 +228,7 @@ describe('Expression', () => {
                 .selectorAll('div.gallery-item')
                 .amount(1, Infinity)
                 .selector('.title')
+                .containsText('Hello!')
                 .check(element => element.scrollTop > 0)
                 .documentComplete()
                 .xpath('./../section')
@@ -240,10 +241,11 @@ describe('Expression', () => {
                 'waits until 3 seconds have elapsed since the start of the execution, waits up to 4.5 seconds until the HTML document ' +
                 'has finished parsing, finds all descendant elements matching the CSS selector “div.gallery-item”, waits up to 4.5 sec' +
                 'onds until a result is found, finds the first descendant element matching the CSS selector “.title”, but only includi' +
-                'ng results that match a callback: `element => element.scrollTop > 0`, waits up to 4.5 seconds until all synchronous r' +
-                'esources of the HTML document have been loaded, finds the first element matching the XPath expression “./../section”,' +
-                ' finds all elements matching the XPath expression “.//img”, but only including elements which are displayed on the pa' +
-                'ge, waits up to 10 seconds until between 2 and 10 (inclusive) results are found.'
+                'ng results that contain the text: “Hello!”, but only including results that match a callback: `element => element.scr' +
+                'ollTop > 0`, waits up to 4.5 seconds until all synchronous resources of the HTML document have been loaded, finds the' +
+                ' first element matching the XPath expression “./../section”, finds all elements matching the XPath expression “.//img' +
+                '”, but only including elements which are displayed on the page, waits up to 10 seconds until between 2 and 10 (inclus' +
+                'ive) results are found.'
             );
         });
 

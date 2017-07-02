@@ -66,6 +66,20 @@ describe('Waiting for a CSS Selector', {slow: 2000, timeout: 20000}, () => {
         isBelow(progress.indexOf('modification'), progress.indexOf('after wait'));
     });
 
+    it('Should wait for a changed Text node', async () => {
+        await navigate('static/mutation-change-text.html');
+        await run(async ({window, Bluefox, reportProgress}) => {
+            await new Bluefox().target(window).timeout('10s').selector('#secondP').containsText('Replaced the text');
+            reportProgress('after wait');
+        });
+        const progress = await getProgress();
+
+        isAtLeast(progress.indexOf('modification'), 0);
+        isAtLeast(progress.indexOf('after wait'), 0);
+
+        isBelow(progress.indexOf('modification'), progress.indexOf('after wait'));
+    });
+
     it('Should wait for an element removed after a delay', async () => {
         await navigate('static/mutation-remove-element.html');
         await run(async ({window, Bluefox, reportProgress}) => {

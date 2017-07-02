@@ -225,3 +225,12 @@ This action calls the given `callback` function for each item in `current value`
 await wait.selector('p.introduction').check(n => /hello/.test(n.textContent))
 await wait.selector('img').check(n => img.complete).amount(10, Infinity)
 ```
+
+#### .containsText(text)
+This action removes all elements from `current value` for which the `textContent` does not contain the given `text`.
+
+```javascript
+await wait.selector('p.introduction').containsText('hello')
+await wait.selector('p.introduction').containsText(/hello/)
+await wait.selectorAll('p').containsText('ipsum').amount(10, 50);
+```

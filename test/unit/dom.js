@@ -779,4 +779,31 @@ describe('dom utility', () => {
             eq(dom.cssSelectorTag`a[href=${foo}], #${bar}`, 'a[href=-\\31 234\\ \\"bar\\"\\ \\#\\:\\.], #\\"bar\\"\\ \\#\\:\\.');
         });
     });
+
+    describe('textContent', () => {
+        it('Should return the textContent of an element', () => {
+            const foo = document.createElement('div');
+            foo.textContent = 'FOO123!';
+            eq(dom.textContent(foo), 'FOO123!');
+        });
+
+        it('Should return the textContent of the html element if a HTMLDocument or WindowProxy is passed', () => {
+            const foo = document.createElement('div');
+            foo.textContent = 'FOO123!';
+            document.body.appendChild(foo);
+            try {
+                eq(dom.textContent(window), document.documentElement.textContent);
+                eq(dom.textContent(document), document.documentElement.textContent);
+            }
+            finally {
+                foo.remove();
+            }
+        });
+
+        it('Should return the textContent of a form element even if the property is overridden', () => {
+            const form = document.createElement('form');
+            form.innerHTML = `<input name="textContent" type="text">Hello!!`;
+            eq(dom.textContent(form), 'Hello!!');
+        });
+    });
 });
