@@ -338,7 +338,7 @@ describe('Execution', () => {
 
             beforeEach(() => {
                 h1 = document.createElement('h1');
-                root = new Expression(null, new actions.Noop(), 12345, () => {});
+                root = new Expression(null, new actions.Noop(), 12345, () => {}, () => {});
                 now = 40000;
             });
 
@@ -478,6 +478,59 @@ describe('Execution', () => {
                 ok(error instanceof Error);
                 eq(error.message, 'foo 3 bar');
             }
+        });
+    });
+
+    describe('#executeOnce()', () => {
+        it('Should return the result of the first check', async () => {
+            const h1 = document.createElement('h1');
+            const action0 = createActionMock(() => executeSuccess(h1));
+            const action1 = createActionMock(() => executeSuccess(h1));
+            const expression0 = createExpressionMock(action0);
+            const expression1 = createExpressionMock(action1, [expression0]);
+            const execution = new Execution(expression1, documentObservers, 12345);
+
+            const executeResult = execution.executeOnce();
+            isTrue(action0.execute.calledOnce, 'should immediately call all actions');
+            isTrue(action1.execute.calledOnce, 'should immediately call all actions');
+            isTrue(execution.fulfilled);
+            ok(executeResult === h1);
+            ok(await execution.execute() === h1);
+        });
+
+        it('Should throw if called multiple times', () => {
+            const h1 = document.createElement('h1');
+            const action = createActionMock(() => executeSuccess(h1));
+            const expression = createExpressionMock(action);
+            const execution = new Execution(expression, documentObservers, 12345);
+
+            execution.executeOnce();
+            throws(() => execution.executeOnce(), /invalid.*state/i);
+        });
+
+        it('Should throw if execute() has already been called', () => {
+            const h1 = document.createElement('h1');
+            const action = createActionMock(() => executeSuccess(h1));
+            const expression = createExpressionMock(action);
+            const execution = new Execution(expression, documentObservers, 12345);
+
+            execution.execute().catch(() => {});
+            throws(() => execution.executeOnce(), /invalid.*state/i);
+        });
+
+        it('Should throw the result of the first check if it fails', async () => {
+            const h1 = document.createElement('h1');
+            const action0 = createActionMock(() => executeSuccess(h1));
+            const action1 = createActionMock(() => executePendingTag`FOO bar`);
+            const expression0 = createExpressionMock(action0);
+            const expression1 = createExpressionMock(action1, [expression0]);
+            const execution = new Execution(expression1, documentObservers, 12345);
+
+            throws(() => execution.executeOnce(), /FOO bar/);
+            isTrue(action0.execute.calledOnce, 'should immediately call all actions');
+            isTrue(action1.execute.calledOnce, 'should immediately call all actions');
+            isTrue(execution.fulfilled);
+            eq(await execution.execute().catch(err => err.message), 'FOO bar');
         });
     });
 

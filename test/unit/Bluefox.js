@@ -1,7 +1,7 @@
 'use strict';
 
 const {describe, it, before} = require('mocha-sugar-free');
-const {assert: {isNull, isTrue, isBelow, strictEqual: eq, instanceOf}} = require('chai');
+const {assert: {isNull, isTrue, isBelow, strictEqual: eq, instanceOf, throws, ok}} = require('chai');
 const sinon = require('sinon');
 const jsdom = require('jsdom');
 
@@ -109,6 +109,47 @@ describe('Bluefox', () => {
 
             eq(await onExecuteBegin.firstCall.args[0].resultPromise, document.body);
             eq(await onExecuteEnd.firstCall.args[0].resultPromise, document.body);
+        });
+    });
+
+    describe('#_expressionOnceExecutor', () => {
+        it('Should create a new Execution and executeOnce() it', async () => {
+            const bluefox = new Bluefox();
+            const result = bluefox.target(null).executeOnce();
+            isNull(result);
+        });
+
+        it('Should call onCheckBegin and onCheckEnd only', async () => {
+            const onExecuteBegin = sinon.spy();
+            const onCheckBegin = sinon.spy();
+            const onCheckEnd = sinon.spy();
+            const onExecuteEnd = sinon.spy();
+            const bluefox = new Bluefox();
+            bluefox.onExecuteBegin = onExecuteBegin;
+            bluefox.onCheckBegin = onCheckBegin;
+            bluefox.onCheckEnd = onCheckEnd;
+            bluefox.onExecuteEnd = onExecuteEnd;
+
+            let actionResult = executePendingTag`FOO foo`;
+            const action = new actions.Action();
+            action.execute = sinon.spy(() => {
+                isTrue(onCheckBegin.called);
+                isBelow(onCheckEnd.callCount, onCheckBegin.callCount);
+                return actionResult;
+            });
+
+            throws(() => bluefox.target(document).action(action).executeOnce(), /FOO foo/);
+            eq(onCheckBegin.callCount, 1);
+            eq(onCheckEnd.callCount, 1);
+
+            actionResult = executeSuccess(document.body);
+            const result = bluefox.target(document).action(action).executeOnce();
+            ok(result === document.body);
+            eq(onCheckBegin.callCount, 2);
+            eq(onCheckEnd.callCount, 2);
+
+            eq(onExecuteBegin.callCount, 0);
+            eq(onExecuteEnd.callCount, 0);
         });
     });
 
