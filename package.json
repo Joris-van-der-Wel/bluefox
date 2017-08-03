@@ -67,7 +67,7 @@
     "mocha-sugar-free": "^1.3.1",
     "morgan": "^1.8.1",
     "serve-index": "^1.8.0",
-    "sinon": "^2.1.0",
+    "sinon": "^3.0.0",
     "uglify-es": "^3.0.19",
     "throttle": "^1.0.3",
     "watchify": "^3.9.0",
