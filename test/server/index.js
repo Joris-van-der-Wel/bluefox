@@ -58,9 +58,7 @@ app.get('/static/*', (request, response, next) => {
             return;
         }
 
-        const type = mime.lookup(path);
-        const charset = mime.charsets.lookup(type);
-        response.setHeader('Content-Type', type + (charset ? '; charset=' + charset : ''));
+        response.setHeader('Content-Type', mime.getType(path));
 
         const readStream = createReadStream(path);
 
