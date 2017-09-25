@@ -12,9 +12,8 @@ The overhead that this library introduces to the page being tested is kept as lo
 npm i bluefox
 ```
 
-### Webpack / Browserify
+### Webpack / Browserify / node.js (jsdom)
 ```javascript
-// browserify / webpack / jsdom
 const Bluefox = require('bluefox');
 const wait = new Bluefox().target(window);
 wait.timeout('5s').selector('section#main > div.contactInformation > a.viewProfile').then(link => {
@@ -181,7 +180,7 @@ await wait.target(document.body).xpathAll(`./p`).amount(0);
 _Note: XPath expressions often cause more overhead than CSS Selectors._
 
 #### .documentInteractive()
-This action causes the execution to remain pending if any of the `HTMLDocument` instances in `current value` have a `readyState` that is not `"interative"` nor `"complete"`. If the `current value` contains any `Element` instances, the check will be performed on their `ownerDocument`. The `current value` is not modified by this action.
+This action causes the execution to remain pending if any of the `HTMLDocument` instances in `current value` have a `readyState` that is not `"interactive"` nor `"complete"`. If the `current value` contains any `Element` instances, the check will be performed on their `ownerDocument`. The `current value` is not modified by this action.
 
 ```javascript
 window.addEventListener('DOMContentLoaded',
@@ -223,7 +222,7 @@ This action calls the given `callback` function for each item in `current value`
 
 ```javascript
 await wait.selector('p.introduction').check(n => /hello/.test(n.textContent))
-await wait.selector('img').check(n => img.complete).amount(10, Infinity)
+await wait.selector('img').check(n => n.complete).amount(10, Infinity)
 ```
 
 #### .containsText(text)
