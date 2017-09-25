@@ -42,19 +42,25 @@ if (!process.env.WD_URL) {
 
 console.log('Using webdriver at:', process.env.WD_URL);
 const browser = wd.promiseRemote(process.env.WD_URL);
-let browerActive = false;
+let browserActive = false;
+
+if (process.env.WD_DEBUG_LOG === '1') {
+    browser.on('status', info => console.log('WD status:', info));
+    browser.on('command', (eventType, command, response) => console.log('WD command: ', eventType, command, response));
+    browser.on('http', (method, path, data) => console.log('WD http: ' + method, path, data));
+}
 
 global.BLUEFOX_TEST_ENV = {
     environment: 'webdriver',
     navigate: async path => {
-        if (browerActive) {
+        if (browserActive) {
             await global.BLUEFOX_TEST_ENV.closeWindow();
         }
 
         await browser.init({
             pageLoadStrategy: 'none', // do not wait for any kind of document readyState during .get()
         });
-        browerActive = true;
+        browserActive = true;
         await browser.setAsyncScriptTimeout(30000);
         await browser.get(`http://127.0.0.1:8123/${path}`);
         await browser.execute(bluefoxStringified);
@@ -74,7 +80,7 @@ global.BLUEFOX_TEST_ENV = {
     },
     closeWindow: async () => {
         await browser.quit();
-        browerActive = false;
+        browserActive = false;
     },
     run: async (func, ...args) => {
         return await executeAsync(browser, func, '[bluefoxTestScope]', args);
