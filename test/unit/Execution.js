@@ -246,6 +246,7 @@ describe('Execution', () => {
                 executeError.message,
                 'Wait expression timed out after 3.214 seconds because action mock 2 is pending. Expression Mock Describe'
             );
+            eq(executeError.name, 'BluefoxTimeoutError');
             eq(executeError.timeout, 3214);
             eq(executeError.actionFailure, 'action mock 2 is pending');
             eq(executeError.expression, expression2);

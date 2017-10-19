@@ -112,6 +112,24 @@ await wait.target(document).timeout('1s').documentComplete(); // 1 second timeou
 await wait.target(document).timeout(1500).documentComplete(); // 1.5 second timeout
 ```
 
+The error object contains the following properties:
+```javascript
+const expression = await wait.target(document).timeout('1.2s').documentComplete();
+const fullExpression = expression.selector('body');
+try {
+  await fullExpression;
+}
+catch (err) {
+  console.log(err.name); // String("BluefoxTimeoutError")
+  console.log(err.message); // String("Wait expression timed out after 1.2 seconds because the HTML document has not yet been parsed")
+  console.log(err.actionFailure); // String("the HTML document has not yet been parsed")
+  console.log(err.timeout); // Number(1200) - milliseconds
+  console.log(err.expression === expression); // Boolean(true)
+  console.log(err.fullExpression === fullExpression); // Boolean(true)
+}
+```
+
+
 #### .target(value)
 The target action is used to simply set the `current value`. It is almost always used as the first action in the chain.
 
