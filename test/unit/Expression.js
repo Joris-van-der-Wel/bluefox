@@ -1,7 +1,7 @@
 'use strict';
 
 const {describe, it, beforeEach, before} = require('mocha-sugar-free');
-const {assert: {ok, strictEqual: eq, lengthOf, throws, isTrue, isUndefined, deepEqual}} = require('chai');
+const {assert: {ok, strictEqual: eq, lengthOf, throws, isTrue, isUndefined, deepEqual, isFunction}} = require('chai');
 const jsdom = require('jsdom');
 const sinon = require('sinon');
 
@@ -236,6 +236,41 @@ describe('Expression', () => {
             const foo = await root.finally(handleFinally).catch(error => error + 1);
             eq(foo, 457);
             isTrue(handleFinally.calledOnce);
+        });
+    });
+
+    describe('#notThenable', () => {
+        it('Should create an expression which is not automagically consumed by promise handlers', async () => {
+            const executor = sinon.spy();
+            const root = new Expression({
+                previous,
+                action: noop,
+                timeoutMs,
+                executor: async expression => executor(expression),
+                onceExecutor,
+            });
+            const expression = root.notThenable();
+            isUndefined(expression.then);
+            isUndefined(expression.catch);
+            isUndefined(expression.finally);
+
+            eq(await expression, expression);
+            await Promise.resolve().then(() => expression).then(result => eq(result, expression));
+        });
+
+        it('Should not affect child expressions', () => {
+            const executor = sinon.spy();
+            const root = new Expression({
+                previous,
+                action: noop,
+                timeoutMs,
+                executor: async expression => executor(expression),
+                onceExecutor,
+            });
+            const expression = root.notThenable().timeout('5s');
+            isFunction(expression.then);
+            isFunction(expression.catch);
+            isFunction(expression.finally);
         });
     });
 
