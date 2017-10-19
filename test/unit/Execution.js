@@ -338,7 +338,13 @@ describe('Execution', () => {
 
             beforeEach(() => {
                 h1 = document.createElement('h1');
-                root = new Expression(null, new actions.Noop(), 12345, () => {}, () => {});
+                root = new Expression({
+                    previous: null,
+                    action: new actions.Noop(),
+                    timeoutMs: 12345,
+                    executor: () => {},
+                    onceExecutor: () => {},
+                });
                 now = 40000;
             });
 
