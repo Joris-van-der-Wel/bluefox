@@ -6,7 +6,7 @@ const sinon = require('sinon');
 const jsdom = require('jsdom');
 
 const {executeSuccess, executePendingTag} = require('../../lib/result');
-const Bluefox = require('../../lib/Bluefox');
+const Bluefox = require('../..');
 const Timer = require('../../lib/Timer');
 const Expression = require('../../lib/Expression');
 const actions = require('../../lib/actions');
