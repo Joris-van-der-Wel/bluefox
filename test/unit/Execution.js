@@ -18,13 +18,14 @@ describe('Execution', () => {
             execute: sinon.spy(result),
         };
     };
-    const createExpressionMock = (action, ancestors = [], timeout = 10000) => {
+    const createExpressionMock = (action, ancestors = [], {timeout = 10000, overrideStartTime = undefined} = {}) => {
         const expression = Object.freeze({
             getExpressionChain: sinon.spy(() => [...ancestors, expression]),
             configuration: Object.freeze({
                 timeout,
                 action,
                 additionalCheckTimeout: Object.freeze([timeout]),
+                overrideStartTime,
             }),
             describe: sinon.spy(() => 'Expression Mock Describe'),
         });
@@ -196,10 +197,10 @@ describe('Execution', () => {
             const action2 = createActionMock(() => executePendingTag`action mock ${1 + 2 - 1} is pending`);
             const action3 = createActionMock(() => executeSuccess(h1));
 
-            const expression0 = createExpressionMock(action0, [], 1234);
-            const expression1 = createExpressionMock(action1, [expression0], 1234);
-            const expression2 = createExpressionMock(action2, [expression0, expression1], 3214);
-            const expression3 = createExpressionMock(action3, [expression0, expression1, expression2], 1234);
+            const expression0 = createExpressionMock(action0, [], {timeout: 1234});
+            const expression1 = createExpressionMock(action1, [expression0], {timeout: 1234});
+            const expression2 = createExpressionMock(action2, [expression0, expression1], {timeout: 3214});
+            const expression3 = createExpressionMock(action3, [expression0, expression1, expression2], {timeout: 1234});
             const execution = new Execution(expression3, documentObservers, 12345);
             execution.createTimer = createTimerMock;
             let now = 40000;
@@ -238,7 +239,7 @@ describe('Execution', () => {
             isTrue(action1.execute.calledThrice);
             isTrue(action2.execute.calledThrice);
             isTrue(action3.execute.notCalled);
-            isTrue(execution.fulfilled); // this action is still pending
+            isTrue(execution.fulfilled);
 
             await executePromise;
             ok(executeError);
@@ -253,12 +254,93 @@ describe('Execution', () => {
             eq(executeError.fullExpression, expression3);
         });
 
+        it('Should trigger the timeout at the proper time if overrideStartTime is set to a number', async () => {
+            const h1 = document.createElement('h1');
+            const action0 = createActionMock(() => executePendingTag`action mock ${1 + 2 - 2} is pending`);
+            const action1 = createActionMock(() => executeSuccess(h1));
+
+            const expression0 = createExpressionMock(action0, [], {timeout: 1234, overrideStartTime: 20000});
+            // if overrideStartTime is undefined, do not overwrite the previous value (20000)
+            const expression1 = createExpressionMock(action1, [expression0], {timeout: 1234, overrideStartTime: undefined});
+            const execution = new Execution(expression1, documentObservers, 12345);
+            execution.createTimer = createTimerMock;
+            let now = 20500;
+            execution.now = () => now;
+
+            let executeError;
+            const executePromise = execution.execute().catch(error => {executeError = error;});
+            isFalse(execution.fulfilled);
+            eq(action0.execute.callCount, 1); // immediate first check
+            eq(action1.execute.callCount, 0);
+            isTrue(createTimerMock.calledOnce);
+
+            // we are now timed out according to overrideStartTime, but not according to now() at the time of the first execution
+            now = 20000 + 1234;
+            createTimerMock.firstCall.args[1](); // invoke the first timer
+            isTrue(execution.fulfilled);
+
+            await executePromise;
+            ok(executeError);
+            eq(
+                executeError.message,
+                'Wait expression timed out after 1.234 seconds because action mock 1 is pending. Expression Mock Describe'
+            );
+            eq(executeError.name, 'BluefoxTimeoutError');
+            eq(executeError.timeout, 1234);
+            eq(executeError.actionFailure, 'action mock 1 is pending');
+            eq(executeError.expression, expression0);
+            eq(executeError.fullExpression, expression1);
+        });
+
+        it('Should trigger the timeout at the proper time if overrideStartTime is set to null', async () => {
+            const h1 = document.createElement('h1');
+            const action0 = createActionMock(() => executePendingTag`action mock ${1 + 2 - 2} is pending`);
+            const action1 = createActionMock(() => executeSuccess(h1));
+
+            const expression0 = createExpressionMock(action0, [], {timeout: 1234, overrideStartTime: 20000});
+            // if overrideStartTime is undefined, do not overwrite the previous value (20000)
+            const expression1 = createExpressionMock(action1, [expression0], {timeout: 1234, overrideStartTime: null});
+            const execution = new Execution(expression1, documentObservers, 12345);
+            execution.createTimer = createTimerMock;
+            let now = 20500;
+            execution.now = () => now;
+
+            let executeError;
+            const executePromise = execution.execute().catch(error => {executeError = error;});
+            isFalse(execution.fulfilled);
+            eq(action0.execute.callCount, 1); // immediate first check
+            eq(action1.execute.callCount, 0);
+            isTrue(createTimerMock.calledOnce);
+
+            // we are now timed out according to overrideStartTime, but not according to now() at the time of the first execution
+            now = 20500 + 1234 - 1;
+            createTimerMock.firstCall.args[1](); // invoke the first timer
+            isFalse(execution.fulfilled);
+
+            // we are now timed out according according to now() at the time of the first execution
+            now = 20500 + 1234;
+            createTimerMock.firstCall.args[1](); // invoke the first timer
+            isTrue(execution.fulfilled);
+
+            await executePromise;
+            ok(executeError);
+            eq(
+                executeError.message,
+                'Wait expression timed out after 1.234 seconds because action mock 1 is pending. Expression Mock Describe'
+            );
+            eq(executeError.name, 'BluefoxTimeoutError');
+            eq(executeError.timeout, 1234);
+            eq(executeError.actionFailure, 'action mock 1 is pending');
+            eq(executeError.expression, expression0);
+            eq(executeError.fullExpression, expression1);
+        });
+
         it('Should pass metaData about the time at execution and check start', () => {
             const h1 = document.createElement('h1');
             const action0 = createActionMock(() => executeSuccess(h1));
             const action1 = createActionMock(() => executePendingTag`action mock is pending`);
-            const expression0 = createExpressionMock(action0, [], 1234);
-            const expression1 = createExpressionMock(action1, [expression0], 1234);
+            const expression0 = createExpressionMock(action0, [], {timeout: 1234});
+            const expression1 = createExpressionMock(action1, [expression0], {timeout: 1234});
 
             const execution = new Execution(expression1, documentObservers, 12345);
             execution.createTimer = createTimerMock;

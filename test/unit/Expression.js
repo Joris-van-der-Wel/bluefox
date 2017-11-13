@@ -333,6 +333,7 @@ describe('Expression', () => {
                 .check(element => element.scrollTop > 0)
                 .documentComplete()
                 .xpath('./../section')
+                .overrideStartTime(1234)
                 .timeout('10s')
                 .xpathAll('.//img')
                 .isDisplayed()
@@ -382,6 +383,25 @@ describe('Expression', () => {
             };
             const root = new Expression({previous, action, timeoutMs, executor, onceExecutor});
             deepEqual(root.configuration.additionalCheckTimeout, [12345, 678, 901]);
+        });
+    });
+
+    describe('#overrideStartTime', () => {
+        it('Should create an expression with overrideStartTime set', () => {
+            const executor = sinon.spy();
+            const root = new Expression({
+                previous,
+                action: noop,
+                timeoutMs,
+                executor: async expression => executor(expression),
+                onceExecutor,
+            });
+
+            eq(root.configuration.overrideStartTime, undefined);
+            eq(root.overrideStartTime(123456).configuration.overrideStartTime, 123456);
+            eq(root.overrideStartTime(null).configuration.overrideStartTime, null);
+            throws(() => root.overrideStartTime('foo'), /unixTimeMs.*must.*number/i);
+            throws(() => root.overrideStartTime(NaN), /unixTimeMs.*must.*finite.*number/i);
         });
     });
 
