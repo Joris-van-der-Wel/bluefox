@@ -8,7 +8,6 @@ env:
         - FIREFOX_BIN=/usr/bin/firefox
 install:
     - npm install
-    - npm ls
 jobs:
     include:
         - stage: test
