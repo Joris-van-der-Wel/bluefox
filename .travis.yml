@@ -56,8 +56,9 @@ jobs:
               - /usr/lib/chromium-browser/chromedriver --version
               - chmod +x .travis/start_vfb.sh && .travis/start_vfb.sh
               - npm run test:server &
-              # work around for https://bugs.launchpad.net/ubuntu/+source/chromium-browser/+bug/1718885
-              - LD_LIBRARY_PATH=/usr/lib/chromium-browser /usr/lib/chromium-browser/chromedriver --verbose --port=9515 "--log-path=$HOME/chromedriver.log" &
+              # # work around for https://bugs.launchpad.net/ubuntu/+source/chromium-browser/+bug/1718885
+              # - LD_LIBRARY_PATH=/usr/lib/chromium-browser /usr/lib/chromium-browser/chromedriver --verbose --port=9515 "--log-path=$HOME/chromedriver.log" &
+              - /usr/lib/chromium-browser/chromedriver --verbose --port=9515 "--log-path=$HOME/chromedriver.log" &
           script: npm run test:integration:webdriver
           after_script:
               - echo 'travis_fold:start:chromedriver.log'; cat ~/chromedriver.log; echo travis_fold:end:chromedriver.log

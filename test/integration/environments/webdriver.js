@@ -1,6 +1,6 @@
 'use strict';
 /* eslint-env node */
-
+const Promise = require('bluebird');
 const wd = require('wd');
 
 const bluefoxStringified = require('../../../standalone.string.js');
@@ -63,6 +63,16 @@ global.BLUEFOX_TEST_ENV = {
         browserActive = true;
         await browser.setAsyncScriptTimeout(30000);
         await browser.get(`http://127.0.0.1:8123/${path}`);
+        for (let delay = 0; delay <= 250; delay += 10) {
+            // workaround for chrome bug introduced in recent versions (somewhere around v64)
+            // in old versions of chrome pageLoadStrategy:'none' would still wait for the actual navigation
+            // but now browser.get() resolves too early sometimes
+            const location = await browser.url();
+            if (!/^data:/.test(location)) {
+                break;
+            }
+            await Promise.delay(delay);
+        }
         await browser.execute(bluefoxStringified);
         await browser.execute(`
         (() => {
