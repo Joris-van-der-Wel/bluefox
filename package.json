@@ -23,7 +23,7 @@
     "test:integration:jsdom": "mocha test/integration/environments/jsdom.js",
     "test:integration:karma": "karma start test/integration/environments/karma.conf.js",
     "test:integration:karma:watch": "npm run test:integration:karma -- --no-single-run --no-browsers",
-    "test:integration:webdriver": "mocha test/integration/environments/webdriver.js",
+    "test:integration:webdriver": "mocha --exit test/integration/environments/webdriver.js",
     "test:benchmark:karma": "karma start test/benchmark/environments/karma.conf.js",
     "test:benchmark:karma:watch": "npm run test:benchmark:karma -- --no-single-run --no-browsers",
     "build": "node build",

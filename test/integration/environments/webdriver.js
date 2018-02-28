@@ -50,6 +50,43 @@ if (process.env.WD_DEBUG_LOG === '1') {
     browser.on('http', (method, path, data) => console.log('WD http: ' + method, path, data));
 }
 
+const initBrowser = async () => {
+    for (let n = 0; n <= 10; n += 10) {
+        // sometimes chromedriver fails to properly initialize the session, retry it
+        const TIMEOUT = Symbol();
+        const initResult = await Promise.race([
+            browser.init({
+                pageLoadStrategy: 'none', // do not wait for any kind of document readyState during .get()
+            }),
+            Promise.delay(1000 + n * 250).then(() => TIMEOUT),
+        ]);
+
+        if (initResult !== TIMEOUT) {
+            return; // success!
+        }
+
+        console.log('browser.init() timed out, trying again!');
+    }
+
+    throw Error('browser.init() has timed out too many times');
+};
+
+const navigateBrowser = async url => {
+    await browser.get(url);
+    for (let n = 0; n <= 25; ++n) {
+        // workaround for chrome bug introduced in recent versions (somewhere around v64)
+        // in old versions of chrome pageLoadStrategy:'none' would still wait for the actual navigation
+        // but now browser.get() resolves too early sometimes
+        const location = await browser.url();
+        if (!/^data:/.test(location)) {
+            return; // success!
+        }
+        const delay = n * 10;
+        console.log('Browser is still on "data:,"... sleeping for', delay, 'ms');
+        await Promise.delay(delay);
+    }
+};
+
 global.BLUEFOX_TEST_ENV = {
     environment: 'webdriver',
     navigate: async path => {
@@ -57,22 +94,10 @@ global.BLUEFOX_TEST_ENV = {
             await global.BLUEFOX_TEST_ENV.closeWindow();
         }
 
-        await browser.init({
-            pageLoadStrategy: 'none', // do not wait for any kind of document readyState during .get()
-        });
+        await initBrowser();
         browserActive = true;
         await browser.setAsyncScriptTimeout(30000);
-        await browser.get(`http://127.0.0.1:8123/${path}`);
-        for (let delay = 0; delay <= 250; delay += 10) {
-            // workaround for chrome bug introduced in recent versions (somewhere around v64)
-            // in old versions of chrome pageLoadStrategy:'none' would still wait for the actual navigation
-            // but now browser.get() resolves too early sometimes
-            const location = await browser.url();
-            if (!/^data:/.test(location)) {
-                break;
-            }
-            await Promise.delay(delay);
-        }
+        await navigateBrowser(`http://127.0.0.1:8123/${path}`);
         await browser.execute(bluefoxStringified);
         await browser.execute(`
         (() => {
