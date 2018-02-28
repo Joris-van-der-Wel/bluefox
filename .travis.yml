@@ -26,7 +26,7 @@ jobs:
               - chmod +x .travis/install_browsers.sh && .travis/install_browsers.sh
           before_script:
               - chmod +x .travis/start_vfb.sh && .travis/start_vfb.sh
-          script: npm run test:unit:karma
+          script: timeout 5m npm run test:unit:karma
 
         - stage: test
           env: TEST_SUITE=integration:jsdom
@@ -43,7 +43,7 @@ jobs:
           before_script:
               - chmod +x .travis/start_vfb.sh && .travis/start_vfb.sh
               - npm run test:server &
-          script: npm run test:integration:karma
+          script: timeout 5m npm run test:integration:karma
 
         - stage: test
           env: TEST_SUITE=integration:webdriver:chrome WD_URL=http://localhost:9515
@@ -59,6 +59,6 @@ jobs:
               # # work around for https://bugs.launchpad.net/ubuntu/+source/chromium-browser/+bug/1718885
               # - LD_LIBRARY_PATH=/usr/lib/chromium-browser /usr/lib/chromium-browser/chromedriver --verbose --port=9515 "--log-path=$HOME/chromedriver.log" &
               - /usr/lib/chromium-browser/chromedriver --verbose --port=9515 "--log-path=$HOME/chromedriver.log" &
-          script: npm run test:integration:webdriver
+          script: timeout 5m npm run test:integration:webdriver
           after_script:
               - echo 'travis_fold:start:chromedriver.log'; cat ~/chromedriver.log; echo travis_fold:end:chromedriver.log
