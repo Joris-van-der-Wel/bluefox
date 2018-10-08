@@ -278,7 +278,8 @@ describe('DocumentObservers', () => {
             isTrue(execution.check.calledOnce);
         });
 
-        it('Should defer a check() upon element load events', async () => {
+        // have to skip ths one because of a bug in jsdom (the load event reaches the `window`, which is not per spec)
+        it('Should defer a check() upon element load events', {skip: USE_JSDOM}, async () => {
             const img = document.createElement('img');
             document.body.appendChild(img);
 
