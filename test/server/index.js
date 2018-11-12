@@ -12,6 +12,10 @@ const morgan = require('morgan');
 const staticDirectoryPath = pathResolve(__dirname, './static');
 const app = express();
 
+const isTextMime = mimeType => {
+    return /^text\//.test(mimeType) || mimeType === 'application/javascript';
+};
+
 app.set('x-powered-by', false);
 app.use(morgan('dev'));
 
@@ -58,7 +62,8 @@ app.get('/static/*', (request, response, next) => {
             return;
         }
 
-        response.setHeader('Content-Type', mime.getType(path));
+        const mimeType = mime.getType(path);
+        response.setHeader('Content-Type', isTextMime(mimeType) ? `${mimeType}; charset=utf-8` : mimeType);
 
         const readStream = createReadStream(path);
 
