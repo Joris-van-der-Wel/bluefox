@@ -251,3 +251,11 @@ await wait.selector('p.introduction').containsText('hello')
 await wait.selector('p.introduction').containsText(/hello/)
 await wait.selectorAll('p').containsText('ipsum').amount(10, 50);
 ```
+
+#### .first()
+This action returns the first element (index 0) from `current value`
+
+```javascript
+const oneImage = await wait.selectorAll('.gallery img').isDisplayed().first();
+const button = await wait.selectorAll('button').check(n => /Confirm Order/i.test(n.textContent)).first()
+```

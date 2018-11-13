@@ -2,7 +2,7 @@
 /* global BLUEFOX_TEST_ENV */
 
 const {describe, it, beforeEach, afterEach} = require('mocha-sugar-free');
-const {assert: {isBelow, isAtLeast}} = require('chai');
+const {assert: {isBelow, isAtLeast, deepEqual: deq, strictEqual: eq}} = require('chai');
 
 const {navigate, closeWindow, run, getProgress} = BLUEFOX_TEST_ENV;
 
@@ -130,6 +130,50 @@ describe('Waiting for a CSS Selector', {slow: 2000, timeout: 20000}, () => {
         });
         const progress = await getProgress();
 
+        isAtLeast(progress.indexOf('modification'), 0);
+        isAtLeast(progress.indexOf('after wait 0'), 0);
+        isBelow(progress.indexOf('modification'), progress.indexOf('after wait 0'));
+    });
+
+    it('Should wait for multiple elements', async () => {
+        await navigate('static/mutation-add-element.html');
+
+        {
+            const elements = await run(async ({window, Bluefox, reportProgress}) => {
+                const elements = await new Bluefox().target(window).timeout('10s').selectorAll('p, strong').amount(4);
+                reportProgress('after wait 0');
+                return elements.map(element => element.id);
+            });
+            deq(elements, ['firstP', 'modification', 'secondP', 'thirdP']);
+        }
+        {
+            const elements = await run(async ({window, Bluefox, reportProgress}) => {
+                const elements = await new Bluefox().target(window).timeout('10s').selectorAll('p, strong').amount(4);
+                reportProgress('after wait 1');
+                return elements.map(element => element.id);
+            });
+            deq(elements, ['firstP', 'modification', 'secondP', 'thirdP']);
+        }
+
+        const progress = await getProgress();
+        isAtLeast(progress.indexOf('modification'), 0);
+        isAtLeast(progress.indexOf('after wait 0'), 0);
+        isAtLeast(progress.indexOf('after wait 1'), 0);
+        isBelow(progress.indexOf('modification'), progress.indexOf('after wait 0'));
+        isBelow(progress.indexOf('modification'), progress.indexOf('after wait 1'));
+    });
+
+    it('Should wait for multiple elements but returning only the first', async () => {
+        await navigate('static/mutation-add-element.html');
+
+        const element = await run(async ({window, Bluefox, reportProgress}) => {
+            const element = await new Bluefox().target(window).timeout('10s').selectorAll('p, strong').amount(4).first();
+            reportProgress('after wait 0');
+            return element.id;
+        });
+        eq(element, 'firstP');
+
+        const progress = await getProgress();
         isAtLeast(progress.indexOf('modification'), 0);
         isAtLeast(progress.indexOf('after wait 0'), 0);
         isBelow(progress.indexOf('modification'), progress.indexOf('after wait 0'));

@@ -1264,4 +1264,70 @@ describe('actions', () => {
             });
         });
     });
+
+    describe('First', () => {
+        it('Should be frozen', () => {
+            ok(Object.isFrozen(new actions.First()));
+        });
+
+        describe('#execute()', () => {
+            let foo;
+            let bar;
+            let baz;
+
+            beforeEach(() => {
+                foo = document.createElement('div');
+                bar = document.createElement('div');
+                baz = document.createElement('div');
+                foo.textContent = 'FOO Foo!';
+                bar.textContent = 'BAR Bar!';
+                baz.textContent = 'BAZ Baz!';
+                bar.appendChild(baz);
+            });
+
+            it('Should return null as-is', () => {
+                const action = new actions.First();
+                const result = action.execute(null);
+                eq(result.status, RESULT_STATUS_SUCCESS);
+                ok(result.value === null);
+            });
+
+            it('Should return null for an empty array', () => {
+                const action = new actions.First();
+                const result = action.execute([]);
+                eq(result.status, RESULT_STATUS_SUCCESS);
+                ok(result.value === null);
+            });
+
+            it('Should return a non array value as-is', () => {
+                const action = new actions.First();
+                const result = action.execute(foo);
+                eq(result.status, RESULT_STATUS_SUCCESS);
+                ok(result.value === foo);
+            });
+
+            it('Should return the first element for an array', () => {
+                const action = new actions.First();
+                const result = action.execute([foo]);
+                eq(result.status, RESULT_STATUS_SUCCESS);
+                ok(result.value === foo);
+            });
+
+            it('Should return the first element for an array', () => {
+                const action = new actions.First();
+                const result = action.execute([bar, foo]);
+                eq(result.status, RESULT_STATUS_SUCCESS);
+                ok(result.value === bar);
+            });
+        });
+
+        describe('#describe()', () => {
+            it('Should describe the filter', () => {
+                eq(
+                    new actions.First().describe(),
+                    'but only returning the first result'
+                );
+            });
+        });
+    });
 });

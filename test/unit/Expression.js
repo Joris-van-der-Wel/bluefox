@@ -338,6 +338,7 @@ describe('Expression', () => {
                 .xpathAll('.//img')
                 .isDisplayed()
                 .amount(2, 10)
+                .first()
                 .describe(),
                 'The expression sets the target to <#document>, waits up to 4.5 seconds until the HTML document has finished parsing, ' +
                 'waits until 3 seconds have elapsed since the start of the execution, waits up to 4.5 seconds until the HTML document ' +
@@ -347,7 +348,7 @@ describe('Expression', () => {
                 'ollTop > 0`, waits up to 4.5 seconds until all synchronous resources of the HTML document have been loaded, finds the' +
                 ' first element matching the XPath expression “./../section”, finds all elements matching the XPath expression “.//img' +
                 '”, but only including elements which are displayed on the page, waits up to 10 seconds until between 2 and 10 (inclus' +
-                'ive) results are found.'
+                'ive) results are found, but only returning the first result.'
             );
         });
 
