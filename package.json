@@ -45,7 +45,7 @@
   },
   "homepage": "https://github.com/Joris-van-der-Wel/bluefox#readme",
   "devDependencies": {
-    "babel-eslint": "^10.0.1",
+    "babel-eslint": "^10.0.3",
     "bluebird": "^3.5.0",
     "browserify": "^16.0.0",
     "chai": "^4.0.2",
