@@ -56,7 +56,7 @@
     "glob": "^7.1.2",
     "istanbul": "1.1.0-alpha.1",
     "jsdom": "^13.0.0",
-    "karma": "^4.0.1",
+    "karma": "^4.4.1",
     "karma-browserify": "^6.0.0",
     "karma-chrome-launcher": "^2.1.1",
     "karma-cli": "^2.0.0",
